@@ -9,10 +9,12 @@
 
     html, body { height: 100%; }
 
+    /* ✅ 0 scroll en pantallas principales */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       height: 100vh;
-      overflow: hidden; /* ✅ nunca scroll global */
+      overflow: hidden;               /* nunca scroll global */
+      overscroll-behavior: none;      /* evita rebotes */
       background: linear-gradient(135deg,
         rgba(245, 199, 66, 0.95) 0%,
         rgba(245, 199, 66, 0.88) 36%,
@@ -21,6 +23,7 @@
         rgba(58, 160, 118, 0.95) 100%);
       color: #000000;
       position: relative;
+      touch-action: none; /* ayuda en iOS a no “arrastrar” el body */
     }
 
     body::before{
@@ -45,7 +48,9 @@
       gap: 8px;
       position: relative;
       z-index: 1;
-      overflow: hidden; /* ✅ evita scroll interno */
+      overflow: hidden;          /* ✅ evita scroll interno */
+      overscroll-behavior: none; /* ✅ */
+      touch-action: none;        /* ✅ */
     }
 
     header {
@@ -59,6 +64,7 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.10);
       flex: 0 0 auto;
       min-height: 52px;
+      overflow: hidden;
     }
 
     .title-wrap{
@@ -100,6 +106,8 @@
       justify-content: center;
       transition: transform 0.2s;
       flex: 0 0 auto;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     button.icon-btn:hover { transform: scale(1.06); }
 
@@ -110,7 +118,8 @@
       gap: 8px;
       flex: 1;
       min-height: 0;
-      overflow: hidden; /* ✅ sin scroll aquí */
+      overflow: hidden;          /* ✅ sin scroll */
+      overscroll-behavior: none; /* ✅ */
     }
 
     /* ✅ responsive: evita aplastar 4 columnas en móvil */
@@ -130,9 +139,10 @@
       backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
-      overflow: hidden; /* ✅ clave: nunca scroll en cards */
+      overflow: hidden; /* ✅ nunca scroll en cards */
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       min-height: 0;
+      overscroll-behavior: none;
     }
 
     .card h2 {
@@ -180,10 +190,12 @@
       font-size: 0.82rem;
       margin-top: auto;
       flex: 0 0 auto;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .btn-calc:hover { background: #222; }
 
-    /* ✅ NO scroll: en vez de crecer infinito, recortamos */
+    /* ✅ NO scroll: recortes por clamp */
     .hint {
       margin-top: 6px;
       font-size: 0.70rem;
@@ -230,6 +242,7 @@
       font-size: 0.8rem;
       line-height: 1.3;
       flex: 0 0 auto;
+      overflow: hidden;
     }
     .result-item {
       display: flex;
@@ -238,6 +251,13 @@
       padding: 2px 0;
       border-bottom: 1px dotted rgba(0,0,0,0.2);
       gap: 10px;
+      min-width: 0;
+    }
+    .result-item span:first-child{
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .result-value { font-weight: 900; text-align: right; white-space: nowrap; }
 
@@ -252,6 +272,9 @@
       font-size: 0.95rem;
       letter-spacing: 0.2px;
       flex: 0 0 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .pattern-box.no-interpretable { background: #DC2626; }
 
@@ -330,7 +353,7 @@
       -webkit-box-orient: vertical;
     }
 
-    /* ✅ CAMBIO CLAVE: planBox SIN SCROLL */
+    /* ✅ planBox SIN SCROLL (recorta) */
     .plan-box{
       background: #f9fafb;
       border: 1px solid #e5e7eb;
@@ -344,7 +367,7 @@
       white-space: pre-wrap;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 10; /* recorta si es largo */
+      -webkit-line-clamp: 10;
       flex: 1 1 auto;
     }
 
@@ -386,6 +409,8 @@
       font-size: 0.78rem;
       margin-bottom: 6px;
       flex: 0 0 auto;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .bd-content { display: none; overflow: hidden; }
     .bd-content.open { display: block; }
@@ -428,6 +453,7 @@
       font-weight: 900;
       transition: all 0.25s;
       white-space: nowrap;
+      user-select: none;
     }
     .flow-step.active {
       background: #000;
@@ -444,7 +470,7 @@
       color: #fff;
       border-color: #DC2626;
     }
-    .arrow { font-size: 0.9rem; color: #000; }
+    .arrow { font-size: 0.9rem; color: #000; user-select:none; }
 
     footer {
       display: flex;
@@ -469,6 +495,8 @@
       font-weight: 900;
       font-size: 0.86rem;
       flex: 0 0 auto;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .credit {
       font-size: 0.7rem;
@@ -481,7 +509,7 @@
       min-width: 0;
     }
 
-    /* ✅ MODALES: los ÚNICOS con scroll permitido */
+    /* ✅ MODALES: aquí SÍ se permite scroll */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -491,6 +519,9 @@
       z-index: 1000;
       justify-content: center;
       align-items: center;
+      overflow: hidden; /* overlay no scrollea */
+      overscroll-behavior: contain;
+      touch-action: auto; /* permite gestos dentro del modal */
     }
     .modal {
       background: #fff;
@@ -499,8 +530,11 @@
       max-width: 920px;
       width: 92%;
       max-height: 85vh;
-      overflow-y: auto; /* ✅ permitido (ℹ y resumen) */
+      overflow-y: auto;              /* ✅ scroll permitido */
+      -webkit-overflow-scrolling: touch; /* ✅ iOS smooth */
       position: relative;
+      overscroll-behavior: contain;
+      touch-action: pan-y;           /* permite scroll vertical */
     }
     .modal-close {
       position: absolute;
@@ -510,6 +544,8 @@
       cursor: pointer;
       background: none;
       border: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .modal h3 { margin-bottom: 12px; font-size: 1.1rem; }
 
@@ -532,6 +568,8 @@
       cursor: pointer;
       margin-top: 10px;
       font-weight: 900;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .tabs {
@@ -554,6 +592,8 @@
       cursor: pointer;
       transition: transform 0.12s;
       line-height: 1;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
     .tab-btn:hover { transform: scale(1.02); }
     .tab-btn.active { background: #000; color: #fff; }
@@ -857,8 +897,8 @@
     </footer>
   </div>
 
-  <div class="modal-overlay" id="reportModal">
-    <div class="modal">
+  <div class="modal-overlay" id="reportModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Informe">
       <button class="modal-close" onclick="closeModal('reportModal')">X</button>
       <h3>Informe (resumen)</h3>
       <pre class="report-text" id="reportContent"></pre>
@@ -866,8 +906,8 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="infoModal">
-    <div class="modal">
+  <div class="modal-overlay" id="infoModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Información">
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
       <h3>Información útil (para no perder tiempo)</h3>
 
@@ -880,7 +920,7 @@
         <button class="tab-btn" id="tabBtnOther" type="button" onclick="openInfoTab('tabOther')">Otros</button>
       </div>
 
-      <!-- ✅ Mantengo tu contenido ℹ tal cual -->
+      <!-- Contenido ℹ -->
       <div class="tab-panel" id="tabUse">
         <div class="info-grid">
           <div class="info-card">
@@ -1108,6 +1148,7 @@
     }
 
     function setStep(el, state){
+      if (!el) return;
       el.classList.remove('active','completed','error');
       if (state) el.classList.add(state);
     }
@@ -1659,7 +1700,7 @@ Siguiente paso:
       lines.push(buildGeneralPlan());
 
       document.getElementById('reportContent').textContent = lines.join('\n');
-      document.getElementById('reportModal').style.display = 'flex';
+      openModal('reportModal');
     }
 
     function copiarInforme(){
@@ -1686,11 +1727,23 @@ Siguiente paso:
     }
 
     function openInfoModal(){
-      document.getElementById('infoModal').style.display = 'flex';
+      openModal('infoModal');
       openInfoTab('tabUse');
     }
 
-    function closeModal(id){ document.getElementById(id).style.display = 'none'; }
+    function openModal(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'flex';
+      el.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal(id){
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = 'none';
+      el.setAttribute('aria-hidden', 'true');
+    }
 
     function clearAll(){
       [
@@ -1728,8 +1781,25 @@ Siguiente paso:
       drawChart();
     }
 
+    /* ✅ BLOQUEO REAL DE SCROLL (pantallas) + PERMITE SOLO EN MODALES */
+    function isInModal(target){
+      return !!(target && target.closest && target.closest('.modal'));
+    }
+
+    document.addEventListener('wheel', function(e){
+      if (!isInModal(e.target)) e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function(e){
+      if (!isInModal(e.target)) e.preventDefault();
+    }, { passive: false });
+
+    /* clic fuera del modal: cerrar */
     window.onclick = function(event){
-      if (event.target.classList.contains('modal-overlay')) event.target.style.display = 'none';
+      if (event.target.classList && event.target.classList.contains('modal-overlay')) {
+        event.target.style.display = 'none';
+        event.target.setAttribute('aria-hidden', 'true');
+      }
     }
 
     window.onload = function(){
