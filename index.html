@@ -248,7 +248,6 @@
     .severity.normal { background: #6EE7B7; color: #000; }
     .severity.leve { background: #FDE047; color: #000; }
     .severity.moderado { background: #FB923C; color: #000; }
-    .severity.modgrave { background: #FDBA74; color: #000; }
     .severity.severo { background: #F87171; color: #fff; }
     .severity.muy-severo { background: #DC2626; color: #fff; }
 
@@ -474,7 +473,7 @@
 
         <div class="input-group">
           <label>MFEV1/MFVC (%)</label>
-          <input type="number" id="ratioMF" step="0.01" min="20" max="110" inputmode="decimal" placeholder="Del informe" oninput="calcularTodo()">
+          <input type="number" id="ratioMF" step="0.01" min="5" max="110" inputmode="decimal" placeholder="Del informe" oninput="calcularTodo()">
           <div class="tiny">Si metes FEV1 y FVC, se autocalcula si este campo está vacío.</div>
         </div>
 
@@ -524,7 +523,8 @@
               <select id="calidadFVC" onchange="calcularTodo()">
                 <option value="">—</option>
                 <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                <option value="D">D</option><option value="E">E</option>
+                <option value="F">F</option>
               </select>
             </div>
             <div class="input-group">
@@ -532,14 +532,15 @@
               <select id="calidadFEV1" onchange="calcularTodo()">
                 <option value="">—</option>
                 <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                <option value="D">D</option><option value="E">E</option>
+                <option value="F">F</option>
               </select>
             </div>
           </div>
 
           <div class="input-row">
             <div class="input-group">
-              <label>Repetibilidad: FVC</label>
+              <label>Reproducibilidad: FVC</label>
               <select id="repFVC" onchange="calcularTodo()">
                 <option value="">—</option>
                 <option value="si">Sí</option>
@@ -547,7 +548,7 @@
               </select>
             </div>
             <div class="input-group">
-              <label>Repetibilidad: FEV1</label>
+              <label>Reproducibilidad: FEV1</label>
               <select id="repFEV1" onchange="calcularTodo()">
                 <option value="">—</option>
                 <option value="si">Sí</option>
@@ -558,14 +559,14 @@
 
           <div class="hint">
             Regla operativa:
-            <br>• <strong>NO interpretable</strong> si calidad "F" o repetibilidad "No" en FVC o FEV1.
+            <br>• <strong>NO interpretable</strong> si calidad "F" o reproducibilidad "No" en FVC o FEV1.
             <br>• Si faltan datos → "pendiente" (la app NO interpreta).
           </div>
         </div>
 
         <div class="quality-warning" id="qualityWarning">
           <strong>NO INTERPRETABLE.</strong>
-          <br>Evita decisiones basadas en esta prueba. Repetir asegurando calidad y repetibilidad.
+          <br>Evita decisiones basadas en esta prueba. Repetir asegurando calidad y reproducibilidad.
         </div>
       </div>
 
@@ -617,7 +618,9 @@
         <h2>Prueba Broncodilatadora</h2>
 
         <div class="hint" style="margin-bottom: 10px;">
-          Criterio implementado: <strong>positiva</strong> si ΔFEV1 ≥200 ml y ≥12% respecto a PRE.
+          Criterios implementados:
+          <br>• <strong>Clásico</strong>: ΔFEV1 ≥200 ml y ≥12% respecto a PRE.
+          <br>• <strong>Alternativo</strong> (si hay FEV1 %REF): ΔFEV1 &gt;10% del FEV1 predicho (inferido).
         </div>
 
         <div class="input-group">
@@ -663,7 +666,8 @@
                 <select id="m_calidadFVC" onchange="syncMobileToDesktop('calidadFVC', this.value); calcularTodo();">
                   <option value="">—</option>
                   <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                  <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                  <option value="D">D</option><option value="E">E</option>
+                  <option value="F">F</option>
                 </select>
               </div>
               <div class="input-group">
@@ -671,14 +675,15 @@
                 <select id="m_calidadFEV1" onchange="syncMobileToDesktop('calidadFEV1', this.value); calcularTodo();">
                   <option value="">—</option>
                   <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                  <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                  <option value="D">D</option><option value="E">E</option>
+                  <option value="F">F</option>
                 </select>
               </div>
             </div>
 
             <div class="input-row">
               <div class="input-group">
-                <label>Repetibilidad: FVC</label>
+                <label>Reproducibilidad: FVC</label>
                 <select id="m_repFVC" onchange="syncMobileToDesktop('repFVC', this.value); calcularTodo();">
                   <option value="">—</option>
                   <option value="si">Sí</option>
@@ -686,7 +691,7 @@
                 </select>
               </div>
               <div class="input-group">
-                <label>Repetibilidad: FEV1</label>
+                <label>Reproducibilidad: FEV1</label>
                 <select id="m_repFEV1" onchange="syncMobileToDesktop('repFEV1', this.value); calcularTodo();">
                   <option value="">—</option>
                   <option value="si">Sí</option>
@@ -696,14 +701,14 @@
             </div>
 
             <div class="hint">
-              NO interpretable si calidad "F" o repetibilidad "No" en FVC o FEV1.
+              NO interpretable si calidad "F" o reproducibilidad "No" en FVC o FEV1.
               Si faltan datos → pendiente.
             </div>
           </div>
 
           <div class="quality-warning" id="m_qualityWarning">
             <strong>NO INTERPRETABLE.</strong>
-            <br>Repetir asegurando calidad y repetibilidad.
+            <br>Repetir asegurando calidad y reproducibilidad.
           </div>
 
           <div class="step-footer">
@@ -733,7 +738,7 @@
 
           <div class="input-group">
             <label>MFEV1/MFVC (%)</label>
-            <input type="number" id="m_ratioMF" step="0.01" min="20" max="110" inputmode="decimal"
+            <input type="number" id="m_ratioMF" step="0.01" min="5" max="110" inputmode="decimal"
               placeholder="Del informe"
               oninput="syncMobileToDesktop('ratioMF', this.value); calcularTodo();">
             <div class="tiny">Si FEV1 y FVC están, se autocalcula si este campo está vacío.</div>
@@ -833,7 +838,6 @@
           <div class="step-footer">
             <button class="btn-secondary" onclick="goStep(3)">ATRÁS</button>
             <button class="btn-primary" onclick="goStep(5)">INFORME FINAL</button>
-            <!-- FIX: PBD debe ser '4b' -->
             <button class="btn-primary" onclick="goStep('4b')">PBD (OPCIONAL)</button>
           </div>
         </div>
@@ -844,7 +848,9 @@
           <h2>Paso 4bis · PBD (opcional)</h2>
 
           <div class="hint">
-            Positiva si ΔFEV1 ≥200 ml y ≥12% vs PRE.
+            Criterios:
+            <br>• Clásico: ΔFEV1 ≥200 ml y ≥12% vs PRE.
+            <br>• Alternativo (si hay FEV1 %REF): ΔFEV1 &gt;10% del predicho.
           </div>
 
           <div class="input-group">
@@ -904,9 +910,7 @@
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
       <h3>Información útil</h3>
       <div class="hint">
-        Aquí no he metido todavía la ampliación “completa” que me pediste (asma/EPOC/otros en profundidad).
-        En esta iteración he priorizado el flujo por pantallas + bloqueo clínico.
-        En tu validación me dices si el flujo te encaja y pasamos a “contenido clínico completo” en ℹ + manejo.
+        Pendiente de ampliar: contenido clínico completo del botón ℹ + tratamiento/seguimiento detallado en “Manejo”.
       </div>
     </div>
   </div>
@@ -960,7 +964,7 @@
 
       if (fvc !== null && !inRange(fvc, 0.20, 8.00)) return 'Mejor FVC fuera de rango (0.20–8.00 L).';
       if (fev1 !== null && !inRange(fev1, 0.20, 8.00)) return 'Mejor FEV1 fuera de rango (0.20–8.00 L).';
-      if (ratio !== null && !inRange(ratio, 20, 110)) return 'MFEV1/MFVC fuera de rango (20–110%).';
+      if (ratio !== null && !inRange(ratio, 5, 110)) return 'MFEV1/MFVC fuera de rango (5–110%).';
       if (fvcRef !== null && !inRange(fvcRef, 10, 250)) return 'FVC %REF fuera de rango (10–250%).';
       if (fev1Ref !== null && !inRange(fev1Ref, 10, 250)) return 'FEV1 %REF fuera de rango (10–250%).';
       if (fefRef !== null && !inRange(fefRef, 10, 250)) return 'FEF25–75 %REF fuera de rango (10–250%).';
@@ -1007,12 +1011,12 @@
       return (qFVC && qFEV1 && rFVC && rFEV1);
     }
 
+    // Gravedad por FEV1 %REF (cortes GOLD clásicos)
     function getObstructionGradeFromRef(fev1Ref){
       if (fev1Ref === null || fev1Ref === undefined || isNaN(fev1Ref)) return null;
-      if (fev1Ref > 70) return { label: 'Leve', cls: 'leve' };
-      if (fev1Ref >= 60) return { label: 'Moderada', cls: 'moderado' };
-      if (fev1Ref >= 50) return { label: 'Moderadamente grave', cls: 'modgrave' };
-      if (fev1Ref >= 35) return { label: 'Grave', cls: 'severo' };
+      if (fev1Ref >= 80) return { label: 'Leve', cls: 'leve' };
+      if (fev1Ref >= 50) return { label: 'Moderada', cls: 'moderado' };
+      if (fev1Ref >= 30) return { label: 'Grave', cls: 'severo' };
       return { label: 'Muy grave', cls: 'muy-severo' };
     }
 
@@ -1145,13 +1149,13 @@
         renderGradeDetail('gradoDetalle', {
           show:true, chip:'Calidad',
           mainLine:'• No se interpreta hasta confirmar calidad.',
-          subLine:'• Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + repetibilidad).',
+          subLine:'• Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + reproducibilidad).',
           note:''
         });
         renderGradeDetail('m_gradoDetalle', {
           show:true, chip:'Calidad',
           mainLine:'• No se interpreta hasta confirmar calidad.',
-          subLine:'• Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + repetibilidad).',
+          subLine:'• Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + reproducibilidad).',
           note:''
         });
         showResult();
@@ -1161,7 +1165,7 @@
 
       if (current.interpretable === false) {
         current.patron = 'NO INTERPRETABLE';
-        current.severidad = 'Repetir (calidad/repetibilidad insuficiente)';
+        current.severidad = 'Repetir (calidad/reproducibilidad insuficiente)';
         current.severidadClass = '';
         current.obstruccion = null;
         renderGradeDetail('gradoDetalle', { show:false });
@@ -1204,8 +1208,13 @@
       let detail = { show:false };
 
       if (current.obstruccion) {
-        if (hasFvcRef) patron = (fvcRef <= 80) ? 'OBSTRUCTIVO MIXTO' : 'OBSTRUCTIVO PURO';
-        else patron = 'OBSTRUCTIVO (falta FVC %REF para puro/mixto)';
+        if (hasFvcRef) {
+          patron = (fvcRef <= 80)
+            ? 'OBSTRUCTIVO con FVC baja (atrapamiento vs mixto)'
+            : 'OBSTRUCTIVO';
+        } else {
+          patron = 'OBSTRUCTIVO (falta FVC %REF para matizar)';
+        }
 
         const g = getObstructionGradeFromRef(fev1Ref);
         if (g) {
@@ -1215,7 +1224,9 @@
             show:true, chip:'Obstrucción · grado',
             mainLine:`• Obstrucción: ratio ${ratio.toFixed(2)}% < 70%.`,
             subLine:`• Grado por FEV1 %REF = ${fev1Ref.toFixed(1)}% → ${g.label.toUpperCase()}.`,
-            note:''
+            note:(fvcRef !== null && fvcRef <= 80)
+              ? '• FVC baja: puede ser atrapamiento (pseudorrestricción) o patrón mixto real; si cambia conducta, confirmar con volúmenes (TLC).'
+              : ''
           };
         } else {
           sev = 'Sin grado (falta FEV1 %REF)';
@@ -1228,7 +1239,7 @@
         }
       } else {
         if (!hasFvcRef) {
-          patron = 'NO OBSTRUCCIÓN (falta FVC %REF para normal vs restrictivo sugerido)';
+          patron = 'NO OBSTRUCCIÓN (falta FVC %REF para normal vs restricción sugerida)';
           detail = {
             show:true, chip:'Faltan datos',
             mainLine:`• NO obstrucción: ratio ${ratio.toFixed(2)}% ≥ 70%.`,
@@ -1277,7 +1288,7 @@
 
 La app NO interpreta ni propone manejo hasta confirmar calidad.
 Siguiente paso:
-- Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + repetibilidad).`;
+- Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + reproducibilidad).`;
       }
 
       if (current.interpretable === false) {
@@ -1285,7 +1296,7 @@ Siguiente paso:
 
 No tomar decisiones basadas en esta prueba.
 Siguiente paso:
-- Repetir espirometría asegurando calidad y repetibilidad.`;
+- Repetir espirometría asegurando calidad y reproducibilidad.`;
       }
 
       const patron = current.patron || '—';
@@ -1306,7 +1317,7 @@ Siguiente paso:
         lines.push('1) Confirmar calidad y revisar coherencia con clínica/exposición.');
         lines.push('2) Si objetivo es variabilidad/diagnóstico y no hay PBD → realizar PBD.');
         lines.push('3) Integrar con clínica: asma vs EPOC vs solapamiento.');
-        lines.push('4) Si “mixto”: atrapamiento vs restricción; si cambia conducta, considerar volúmenes (TLC).');
+        lines.push('4) Si FVC baja: atrapamiento vs restricción; si cambia conducta, considerar volúmenes (TLC).');
       } else if (patron.includes('RESTRICTIVO')) {
         lines.push('1) Confirmar calidad.');
         lines.push('2) Si cambia conducta: confirmar con volúmenes/TLC (según disponibilidad).');
@@ -1328,7 +1339,7 @@ Siguiente paso:
       if (sospecha !== 'no') {
         lines.push('');
         lines.push(`Sospecha: ${sospecha.toUpperCase()}`);
-        lines.push('• Se detallará tratamiento paso a paso cuando fijemos bibliografía en este chat.');
+        lines.push('• Tratamiento/seguimiento: pendiente de completar con tu bibliografía.');
       }
 
       lines.push('');
@@ -1353,10 +1364,10 @@ Siguiente paso:
       calcularPatronYGrado();
       updatePlan();
       buildMobileFinalReport();
-      // FIX: mantener coherencia si alternas vistas
       syncDesktopToMobile();
     }
 
+    // PBD: clásico + alternativo (>10% predicho si se puede inferir)
     function calcularBD(){
       const pre = num('bdFev1Pre');
       const post = num('bdFev1Post');
@@ -1387,16 +1398,42 @@ Siguiente paso:
 
       const cambioAbs = post - pre;
       const cambioPor = (cambioAbs / pre) * 100;
-      const esPositiva = (cambioAbs >= 0.2) && (cambioPor >= 12);
+
+      // Clásico
+      const classicPos = (cambioAbs >= 0.2) && (cambioPor >= 12);
+
+      // Alternativo: >10% del predicho (si se puede inferir predicho de FEV1 con FEV1 %REF)
+      const fev1Ref = num('fev1Ref');
+      let pred = null;
+      let altPos = null;
+      let cambioPredPor = null;
+
+      if (fev1Ref !== null && fev1Ref > 0) {
+        pred = pre / (fev1Ref / 100); // predicho aproximado a partir de %REF y valor pre
+        cambioPredPor = (cambioAbs / pred) * 100;
+        altPos = (cambioPredPor > 10);
+      }
+
+      const esPositiva = classicPos || (altPos === true);
 
       const absMl = Math.round(cambioAbs * 1000);
       const signo = (cambioPor >= 0) ? '+' : '';
+      let extra = '';
+
+      if (pred !== null && cambioPredPor !== null) {
+        const signo2 = (cambioPredPor >= 0) ? '+' : '';
+        extra = ` | Δ%pred=${signo2}${cambioPredPor.toFixed(1)}%`;
+      } else {
+        extra = ' | Δ%pred=—';
+      }
+
       const res = esPositiva
-        ? `POSITIVA (${signo}${cambioPor.toFixed(1)}%, ${absMl} ml)`
-        : `NEGATIVA (${signo}${cambioPor.toFixed(1)}%, ${absMl} ml)`;
+        ? `POSITIVA (${signo}${cambioPor.toFixed(1)}%, ${absMl} ml)${extra}`
+        : `NEGATIVA (${signo}${cambioPor.toFixed(1)}%, ${absMl} ml)${extra}`;
 
       setRes(res, esPositiva, esPositiva ? '#059669' : '#DC2626');
-      current.bd = { pre, post, cambioAbs, cambioPor, esPositiva, absMl, texto: res };
+      current.bd = { pre, post, cambioAbs, cambioPor, classicPos, altPos, pred, cambioPredPor, esPositiva, absMl, texto: res };
+
       updatePlan();
       buildMobileFinalReport();
       syncDesktopToMobile();
@@ -1407,13 +1444,29 @@ Siguiente paso:
       return `PBD: ${current.bd.texto}  |  PRE=${current.bd.pre.toFixed(2)} L  POST=${current.bd.post.toFixed(2)} L`;
     }
 
+    function isMobileView(){
+      return window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
+    }
+
     function generarInforme(){
       if (!hasEverCalculated) {
         alert('Primero introduce valores y calcula.');
         return;
       }
+
       const lines = buildFullReportLines();
-      document.getElementById('reportContent').textContent = lines.join('\n');
+      const text = lines.join('\n');
+
+      // En móvil: ir al Paso 5 directamente (sin modal)
+      if (isMobileView()) {
+        const box = document.getElementById('m_reportContent');
+        if (box) box.textContent = text;
+        goStep(5);
+        return;
+      }
+
+      // Escritorio: modal
+      document.getElementById('reportContent').textContent = text;
       document.getElementById('reportModal').style.display = 'flex';
     }
 
@@ -1600,12 +1653,12 @@ Siguiente paso:
       calcularTodo();
 
       if (current.interpretable === null) {
-        alert('Calidad pendiente. Marca "Calidad suficiente: Sí/No" o completa ATS/ERS + repetibilidad.');
+        alert('Calidad pendiente. Marca "Calidad suficiente: Sí/No" o completa ATS/ERS + reproducibilidad.');
         goStep(1);
         return;
       }
       if (current.interpretable === false) {
-        alert('NO interpretable. No se puede continuar: repetir espirometría con calidad/repetibilidad.');
+        alert('NO interpretable. No se puede continuar: repetir espirometría con calidad/reproducibilidad.');
         goStep(1);
         return;
       }
