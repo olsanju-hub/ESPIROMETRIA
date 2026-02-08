@@ -1,6 +1,4 @@
-/* PARTE 2/2 · app.js
-   Pega este contenido como archivo "app.js" en la misma carpeta del HTML.
-*/
+/* app.js */
 
 let current = {
   fecha: new Date().toLocaleDateString('es-ES'),
@@ -24,7 +22,6 @@ function sanitizeDecimal(inputEl){
   const firstComma = v.indexOf(',');
   const firstDot = v.indexOf('.');
   if (firstComma !== -1 && firstDot !== -1){
-    // si hay ambos, quitamos el separador “secundario”
     if (firstComma < firstDot) v = v.replace(/\./g, '');
     else v = v.replace(/,/g, '');
   }
@@ -258,7 +255,6 @@ function calcularPatronYGrado(){
     });
 
     showResult();
-    updatePlan();
     return;
   }
   setFieldError(null);
@@ -295,7 +291,6 @@ function calcularPatronYGrado(){
     });
 
     showResult();
-    updatePlan();
     return;
   }
 
@@ -309,11 +304,9 @@ function calcularPatronYGrado(){
     renderGradeDetail('m_gradoDetalle', { show:false });
 
     showResult();
-    updatePlan();
     return;
   }
 
-  // interpretable === true
   const ratio = num('ratioMF');
   const fvcRef = num('fvcRef');
   const fev1Ref = num('fev1Ref');
@@ -338,7 +331,6 @@ function calcularPatronYGrado(){
     });
 
     showResult();
-    updatePlan();
     return;
   }
 
@@ -423,10 +415,9 @@ function calcularPatronYGrado(){
   renderGradeDetail('m_gradoDetalle', detail);
 
   showResult();
-  updatePlan();
 }
 
-/* ---------- manejo (texto) ---------- */
+/* ---------- manejo (OPERATIVO) ---------- */
 
 function prettyContext(c){
   if (c === 'seguimiento') return 'Seguimiento';
@@ -441,132 +432,109 @@ function prettySospecha(s){
   return 'No especificada';
 }
 
-function add(lines, t){ if (t) lines.push(t); }
-function bullet(lines, t){ if (t) lines.push('• ' + t); }
-function dash(lines, t){ if (t) lines.push('- ' + t); }
-
-function getBDLine(){
-  if (!current.bd) return 'PBD: no realizada o no calculada.';
-  return `PBD: ${current.bd.texto}  |  PRE=${current.bd.pre.toFixed(2)} L  POST=${current.bd.post.toFixed(2)} L`;
+function getBDLineShort(){
+  if (!current.bd) return 'PBD: no calculada / no realizada';
+  const signo = current.bd.cambioPor >= 0 ? '+' : '';
+  return `PBD: ${current.bd.esPositiva ? 'POSITIVA' : 'NEGATIVA'} (${signo}${current.bd.cambioPor.toFixed(1)}%, ${current.bd.absMl} ml)`;
 }
 
-function buildGeneralPlan(){
+function buildOperationalPlan(){
   if (!hasEverCalculated) return 'Introduce valores, añade calidad y calcula.';
 
+  // calidad pendiente o mala
   if (current.interpretable === null){
-    return `CALIDAD: PENDIENTE
-
-La app NO interpreta ni propone manejo hasta confirmar calidad.
-Siguiente paso:
-- Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + reproducibilidad).`;
+    return [
+      'CALIDAD: PENDIENTE',
+      '',
+      'Qué hacer:',
+      '• Marca "Calidad suficiente: Sí/No" o completa ATS/ERS + reproducibilidad.',
+      '• Hasta entonces, no se cierra patrón ni se sugiere plan.'
+    ].join('\n');
   }
 
   if (current.interpretable === false){
-    return `DX FUNCIONAL: NO INTERPRETABLE
-
-No tomar decisiones basadas en esta prueba.
-Siguiente paso:
-- Repetir espirometría asegurando calidad y reproducibilidad.
-- Revisar técnica, sellado, inicio explosivo, tos, finalización y reproducibilidad.`;
+    return [
+      'DX FUNCIONAL: NO INTERPRETABLE',
+      '',
+      'Qué hacer:',
+      '• No tomar decisiones basadas en esta espirometría.',
+      '• Repetir asegurando técnica y reproducibilidad.',
+      '• Revisar tos, inicio explosivo, finalización, fugas, sellado y esfuerzo.'
+    ].join('\n');
   }
 
   const patron = current.patron || '—';
   const sospecha = txt('sospecha');
   const contexto = txt('contexto');
-
   const ratio = num('ratioMF');
   const fvcRef = num('fvcRef');
   const fev1Ref = num('fev1Ref');
 
   const lines = [];
-  add(lines, `DX FUNCIONAL: ${patron}`);
-  if (current.severidad) add(lines, `Grado/nota: ${current.severidad}`);
-  add(lines, getBDLine());
-  add(lines, '');
-  add(lines, `Contexto: ${prettyContext(contexto)}`);
-  add(lines, `Sospecha clínica: ${prettySospecha(sospecha)}`);
-  add(lines, '');
-  add(lines, 'PASOS (orden práctico):');
+  lines.push(`DX FUNCIONAL: ${patron}`);
+  if (current.severidad) lines.push(`Nota: ${current.severidad}`);
+  lines.push(getBDLineShort());
+  lines.push(`Contexto: ${prettyContext(contexto)} | Sospecha: ${prettySospecha(sospecha)}`);
+  lines.push('');
 
-  add(lines, '0) Antes de actuar');
-  bullet(lines, 'Correlacionar con clínica: síntomas, tabaco/exposición, variabilidad, exacerbaciones, comorbilidades.');
-  bullet(lines, 'Revisar técnica inhalatoria y adherencia si ya hay tratamiento.');
-  bullet(lines, 'Registrar valores y fecha (para comparar en seguimiento).');
-  add(lines, '');
-
+  // plan por patrón (corto y accionable)
   if (patron.includes('OBSTRUCTIVO')){
-    add(lines, '1) Interpretación funcional (obstrucción)');
-    bullet(lines, 'Confirmar que la obstrucción encaja con clínica y exposición.');
-    bullet(lines, 'Si FVC baja: pensar en atrapamiento (pseudorrestricción) vs mixto; si cambia conducta, confirmar con volúmenes (TLC).');
-    bullet(lines, 'Integrar PBD con clínica (variabilidad apoya asma/solapamiento).');
-    add(lines, '');
-
-    add(lines, '2) Orientación diagnóstica rápida');
-    if (sospecha === 'asma'){
-      bullet(lines, 'Si clínica compatible con asma: priorizar control de inflamación y variabilidad (evitar monoterapia broncodilatadora de larga duración).');
-      bullet(lines, 'Definir control: síntomas diurnos/nocturnos, uso de rescate, limitación, crisis.');
-    } else if (sospecha === 'epoc'){
-      bullet(lines, 'Si clínica compatible con EPOC: priorizar broncodilatación de mantenimiento y reducción de riesgo (tabaco, vacunas, ejercicio/rehabilitación).');
-      bullet(lines, 'Registrar exacerbaciones previas (frecuencia, gravedad, antibiótico/corticoide, ingresos).');
-    } else {
-      bullet(lines, 'Si no está claro (asma vs EPOC vs solapamiento): usar historia (variabilidad/atopia vs tabaco crónico) + respuesta a tratamiento + evolución.');
+    lines.push('Hoy (práctico):');
+    lines.push('• Confirmar que encaja con clínica (síntomas, exposición/tabaco, variabilidad, exacerbaciones).');
+    lines.push('• Revisar técnica inhalatoria y adherencia (si ya hay tratamiento).');
+    if (patron.includes('FVC baja')){
+      lines.push('• FVC baja: considerar atrapamiento vs mixto; si cambia decisiones, confirmar con volúmenes (TLC).');
     }
-    add(lines, '');
-
-    add(lines, '3) Seguimiento (muy operativo)');
-    bullet(lines, 'Revisar técnica inhalatoria en consulta (demostración + corrección).');
-    bullet(lines, 'Plan de revisión en semanas: síntomas, uso de rescate, tolerancia, exacerbaciones.');
-    bullet(lines, 'Repetir espirometría si: mala respuesta, duda diagnóstica, cambio clínico relevante o para documentar persistencia/variabilidad.');
-    add(lines, '');
-
-    add(lines, '4) Señales de “derivar / ampliar estudio”');
-    bullet(lines, 'Obstrucción moderada-grave con síntomas relevantes, o síntomas desproporcionados.');
-    bullet(lines, 'Exacerbaciones repetidas, o mala respuesta pese a buena técnica/adherencia.');
-    bullet(lines, 'Duda entre atrapamiento vs patrón mixto que cambie decisiones (considerar volúmenes/TLC).');
+    lines.push('Seguimiento:');
+    lines.push('• Revisión en semanas con síntomas/uso de rescate/exacerbaciones; repetir función si mala respuesta o duda.');
+    lines.push('Derivar/estudio:');
+    lines.push('• Moderada-grave con clínica relevante, exacerbaciones repetidas, duda diagnóstica que cambie manejo.');
+    if (sospecha === 'asma'){
+      lines.push('');
+      lines.push('Pista por sospecha ASMA:');
+      lines.push('• PBD positiva apoya variabilidad; si sospecha alta y espiro normal o dudosa, repetir en fase sintomática.');
+    } else if (sospecha === 'epoc'){
+      lines.push('');
+      lines.push('Pista por sospecha EPOC:');
+      lines.push('• Registrar exacerbaciones previas; intervenir en tabaco/exposición y comorbilidades.');
+    }
 
   } else if (patron.includes('RESTRICTIVO')){
-    add(lines, '1) Interpretación funcional (restricción sugerida)');
-    bullet(lines, 'Esto es “sugerido” por FVC baja con ratio normal: no confirma restricción sin volúmenes (TLC).');
-    bullet(lines, 'Si afecta decisiones, confirmar con volúmenes y orientar estudio según clínica.');
-    add(lines, '');
-
-    add(lines, '2) Orientación clínica inicial');
-    bullet(lines, 'Revisar: obesidad, pared torácica, debilidad neuromuscular, secuelas pleurales, enfermedad intersticial, etc.');
-    bullet(lines, 'Si disnea progresiva, crepitantes, desaturación o Rx alterada: priorizar evaluación ampliada/derivación.');
-    add(lines, '');
-
-    add(lines, '3) Seguimiento');
-    bullet(lines, 'Si clínica leve/estable: control evolutivo + repetir función respiratoria si hay cambios.');
-    bullet(lines, 'Si clínica significativa: no esperar; completar estudio.');
+    lines.push('Hoy (práctico):');
+    lines.push('• “Restrictivo sugerido” ≠ restricción confirmada.');
+    lines.push('• Si cambia conducta: confirmar con volúmenes (TLC) y orientar según clínica.');
+    lines.push('Si clínica relevante:');
+    lines.push('• Buscar datos de alarma (desaturación, crepitantes, disnea progresiva, Rx alterada) y ampliar estudio/derivar.');
+    lines.push('Seguimiento:');
+    lines.push('• Si leve/estable: control evolutivo y repetir si cambios.');
 
   } else if (patron.includes('NORMAL')){
-    add(lines, '1) Interpretación funcional (normal según cortes)');
-    bullet(lines, 'Una espirometría normal NO excluye asma intercrisis si la clínica sugiere variabilidad.');
-    bullet(lines, 'Si sospecha alta: repetir en fase sintomática y/o completar evaluación de variabilidad.');
-    add(lines, '');
-
-    add(lines, '2) Si persisten síntomas');
-    bullet(lines, 'Revisar diagnóstico diferencial: cardiaco, anemia, descondicionamiento, obesidad, rinitis/ERGE, ansiedad, etc.');
-    bullet(lines, 'Si hay banderas rojas (disnea progresiva, desaturación, hemoptisis, pérdida de peso, dolor torácico): ampliar estudio/derivar.');
+    lines.push('Hoy (práctico):');
+    lines.push('• Si la clínica sugiere asma/variabilidad: “normal” no la excluye.');
+    lines.push('• Si sospecha alta: repetir en fase sintomática y/o completar evaluación de variabilidad.');
+    lines.push('Si persisten síntomas:');
+    lines.push('• Revisar diferencial: cardiaco, anemia, descondicionamiento, obesidad, rinitis/ERGE, ansiedad, etc.');
+    lines.push('Derivar/estudio:');
+    lines.push('• Banderas rojas (disnea progresiva, desaturación, hemoptisis, pérdida de peso, dolor torácico).');
 
   } else {
-    add(lines, '1) Completar datos para cerrar patrón');
-    bullet(lines, 'Introduce RATIO (MFEV1/MFVC).');
-    bullet(lines, 'Añade FVC %REF para diferenciar normal vs restricción sugerida.');
-    bullet(lines, 'Si hay obstrucción, añade FEV1 %REF para graduar.');
+    lines.push('Faltan datos para cerrar:');
+    lines.push('• RATIO (FEV1/FVC %) para decidir obstrucción.');
+    lines.push('• FVC %REF para normal vs restrictivo sugerido.');
+    lines.push('• Si obstrucción: FEV1 %REF para graduar.');
   }
 
-  add(lines, '');
-  add(lines, 'DATOS CLAVE (registro):');
-  if (ratio !== null) dash(lines, `RATIO = ${ratio.toFixed(2)}% (corte 70)`);
-  if (fvcRef !== null) dash(lines, `FVC %REF = ${fvcRef.toFixed(1)}%`);
-  if (fev1Ref !== null) dash(lines, `FEV1 %REF = ${fev1Ref.toFixed(1)}%`);
+  lines.push('');
+  lines.push('Datos clave (registro):');
+  if (ratio !== null) lines.push(`- RATIO: ${ratio.toFixed(2)}% (corte 70)`);
+  if (fvcRef !== null) lines.push(`- FVC %REF: ${fvcRef.toFixed(1)}%`);
+  if (fev1Ref !== null) lines.push(`- FEV1 %REF: ${fev1Ref.toFixed(1)}%`);
 
   return lines.join('\n');
 }
 
 function updatePlan(){
-  const text = buildGeneralPlan();
+  const text = buildOperationalPlan();
   const plan = document.getElementById('planBox');
   const mPlan = document.getElementById('m_planBox');
   if (plan) plan.textContent = text;
@@ -580,9 +548,9 @@ function calcularTodo(){
   hasEverCalculated = true;
   autoFillRatioIfEmpty();
   current.fecha = new Date().toLocaleDateString('es-ES');
+
   calcularPatronYGrado();
   updatePlan();
-  buildMobileFinalReport();
   syncDesktopToMobile();
 }
 
@@ -595,13 +563,13 @@ function calcularBD(){
   const bd = document.getElementById('bdresult');
   const mbd = document.getElementById('m_bdresult');
 
-  const setRes = (t, ok, color) => {
+  const setRes = (t, color) => {
     if (bd){ bd.textContent = t; bd.style.background = color || '#000'; }
     if (mbd){ mbd.textContent = t; mbd.style.background = color || '#000'; }
   };
 
   if (!pre || !post){
-    setRes('No calculada', false, '#000');
+    setRes('No calculada', '#000');
     current.bd = null;
     updatePlan();
     syncDesktopToMobile();
@@ -609,7 +577,7 @@ function calcularBD(){
   }
 
   if (!inRange(post, 0.20, 8.00)){
-    setRes('POST fuera de rango', false, '#DC2626');
+    setRes('POST fuera de rango', '#DC2626');
     current.bd = null;
     updatePlan();
     syncDesktopToMobile();
@@ -635,8 +603,8 @@ function calcularBD(){
   const esPositiva = classicPos || (altPos === true);
   const absMl = Math.round(cambioAbs * 1000);
   const signo = (cambioPor >= 0) ? '+' : '';
-  let extra = '';
 
+  let extra = '';
   if (pred !== null && cambioPredPor !== null){
     const signo2 = (cambioPredPor >= 0) ? '+' : '';
     extra = ` | Δ%pred=${signo2}${cambioPredPor.toFixed(1)}%`;
@@ -648,11 +616,11 @@ function calcularBD(){
     ? `POSITIVA (${signo}${cambioPor.toFixed(1)}%, ${absMl} ml)${extra}`
     : `NEGATIVA (${signo}${cambioPor.toFixed(1)}%, ${absMl} ml)${extra}`;
 
-  setRes(res, esPositiva, esPositiva ? '#059669' : '#DC2626');
+  setRes(res, esPositiva ? '#059669' : '#DC2626');
 
   current.bd = {
     pre, post, cambioAbs, cambioPor, classicPos, altPos, pred, cambioPredPor,
-    esPositiva, absMl, texto: res
+    esPositiva, absMl
   };
 
   updatePlan();
@@ -661,6 +629,12 @@ function calcularBD(){
 }
 
 /* ---------- informe ---------- */
+
+function getBDLineLong(){
+  if (!current.bd) return 'PBD: no realizada o no calculada.';
+  const signo = current.bd.cambioPor >= 0 ? '+' : '';
+  return `PBD: ${current.bd.esPositiva ? 'POSITIVA' : 'NEGATIVA'} (${signo}${current.bd.cambioPor.toFixed(1)}%, ${current.bd.absMl} ml)  |  PRE=${current.bd.pre.toFixed(2)} L  POST=${current.bd.post.toFixed(2)} L`;
+}
 
 function buildFullReportLines(){
   const lines = [];
@@ -694,10 +668,10 @@ function buildFullReportLines(){
   lines.push(`- Obstrucción (ratio <70): ${current.obstruccion === null ? '—' : (current.obstruccion ? 'SÍ' : 'NO')}`);
   lines.push(`- Patrón: ${current.patron || '—'}`);
   lines.push(`- Grado/nota: ${current.severidad || '—'}`);
-  lines.push(`- ${getBDLine()}`);
+  lines.push(`- ${getBDLineLong()}`);
   lines.push('');
-  lines.push('MANEJO / PRÓXIMOS PASOS:');
-  lines.push(buildGeneralPlan());
+  lines.push('PLAN (operativo):');
+  lines.push(buildOperationalPlan());
 
   return lines;
 }
