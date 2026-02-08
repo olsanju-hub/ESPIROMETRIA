@@ -7,23 +7,12 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* ✅ FIX iOS/Chrome: bloquear scroll fantasma */
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      overscroll-behavior: none;
-    }
+    html, body { height: 100%; }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
-      /* ✅ FIX iOS: evita “bounce”/scroll fantasma con 100vh */
-      position: fixed;
-      inset: 0;
-      width: 100%;
-      overflow: hidden;
-
-      /* Más amarillo/verde, menos zona “blanca” */
+      height: 100vh;
+      overflow: hidden; /* ✅ nunca scroll global */
       background: linear-gradient(135deg,
         rgba(245, 199, 66, 0.95) 0%,
         rgba(245, 199, 66, 0.88) 36%,
@@ -49,13 +38,14 @@
     }
 
     .container {
-      height: 100dvh; /* ✅ mejor que 100vh en móvil */
+      height: 100vh;
       display: flex;
       flex-direction: column;
       padding: 10px;
       gap: 8px;
       position: relative;
       z-index: 1;
+      overflow: hidden; /* ✅ evita scroll interno */
     }
 
     header {
@@ -67,6 +57,8 @@
       border-radius: 10px;
       backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      flex: 0 0 auto;
+      min-height: 52px;
     }
 
     .title-wrap{
@@ -85,7 +77,13 @@
       flex: 0 0 auto;
     }
 
-    h1 { font-size: 1.05rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
     .header-buttons { display: flex; gap: 8px; }
 
@@ -101,15 +99,28 @@
       align-items: center;
       justify-content: center;
       transition: transform 0.2s;
+      flex: 0 0 auto;
     }
     button.icon-btn:hover { transform: scale(1.06); }
 
+    /* ✅ grid base (desktop) */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1.25fr 0.95fr;
       gap: 8px;
       flex: 1;
       min-height: 0;
+      overflow: hidden; /* ✅ sin scroll aquí */
+    }
+
+    /* ✅ responsive: evita aplastar 4 columnas en móvil */
+    @media (max-width: 1100px){
+      .main-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 720px){
+      .main-grid { grid-template-columns: 1fr; }
+      header { padding: 8px 12px; }
+      h1 { font-size: 1.0rem; }
     }
 
     .card {
@@ -119,7 +130,7 @@
       backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: hidden; /* ✅ clave: nunca scroll en cards */
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       min-height: 0;
     }
@@ -131,9 +142,10 @@
       border-bottom: 2px solid #000;
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      flex: 0 0 auto;
     }
 
-    .input-group { margin-bottom: 6px; }
+    .input-group { margin-bottom: 6px; flex: 0 0 auto; }
     .input-group label {
       display: block;
       font-size: 0.72rem;
@@ -154,6 +166,7 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
+      flex: 0 0 auto;
     }
 
     .btn-calc {
@@ -166,9 +179,11 @@
       font-weight: 900;
       font-size: 0.82rem;
       margin-top: auto;
+      flex: 0 0 auto;
     }
     .btn-calc:hover { background: #222; }
 
+    /* ✅ NO scroll: en vez de crecer infinito, recortamos */
     .hint {
       margin-top: 6px;
       font-size: 0.70rem;
@@ -178,6 +193,11 @@
       border: 1px solid #9CA3AF;
       background: #F9FAFB;
       color: #374151;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      -webkit-box-orient: vertical;
+      flex: 0 0 auto;
     }
 
     .tiny {
@@ -185,6 +205,10 @@
       color: #374151;
       line-height: 1.2;
       margin-top: 4px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
     }
 
     .quality-warning {
@@ -197,12 +221,15 @@
       margin-top: 8px;
       display: none;
       line-height: 1.25;
+      overflow: hidden;
+      flex: 0 0 auto;
     }
     .quality-warning.show { display: block; }
 
     .result-display {
       font-size: 0.8rem;
       line-height: 1.3;
+      flex: 0 0 auto;
     }
     .result-item {
       display: flex;
@@ -224,6 +251,7 @@
       font-weight: 900;
       font-size: 0.95rem;
       letter-spacing: 0.2px;
+      flex: 0 0 auto;
     }
     .pattern-box.no-interpretable { background: #DC2626; }
 
@@ -234,6 +262,10 @@
       margin-top: 6px;
       text-align: center;
       font-weight: 900;
+      flex: 0 0 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .severity.normal { background: #6EE7B7; color: #000; }
     .severity.leve { background: #FDE047; color: #000; }
@@ -253,6 +285,8 @@
       color: #111827;
       display: none;
       white-space: pre-wrap;
+      overflow: hidden; /* ✅ sin scroll */
+      flex: 0 0 auto;
     }
     .grade-detail.show{ display:block; }
     .grade-detail .k { font-weight: 900; }
@@ -275,20 +309,28 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      overflow: hidden; /* ✅ sin scroll */
+      flex: 1 1 auto;
     }
     .plan-title{
       font-size: 0.75rem;
       font-weight: 900;
       letter-spacing: 0.2px;
       text-transform: uppercase;
+      flex: 0 0 auto;
     }
     .plan-note{
       font-size: 0.7rem;
       color: #374151;
       line-height: 1.25;
+      flex: 0 0 auto;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
     }
 
-    /* ✅ FIX: NO SCROLL en pantalla principal (planBox) */
+    /* ✅ CAMBIO CLAVE: planBox SIN SCROLL */
     .plan-box{
       background: #f9fafb;
       border: 1px solid #e5e7eb;
@@ -297,16 +339,13 @@
       font-size: 0.74rem;
       color: #111827;
       line-height: 1.28;
-
-      overflow: hidden;      /* ✅ */
-      max-height: none;      /* ✅ */
+      overflow: hidden;     /* ✅ ya no scroll */
       min-height: 0;
       white-space: pre-wrap;
-
-      /* recorte tipo resumen sin scroll */
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 10; /* ajusta 8–12 si quieres */
+      -webkit-line-clamp: 10; /* recorta si es largo */
+      flex: 1 1 auto;
     }
 
     #flowVolumeChart {
@@ -315,6 +354,7 @@
       background: #fff;
       border-radius: 8px;
       border: 1px solid #000;
+      flex: 0 0 auto;
     }
 
     .chart-legend {
@@ -323,6 +363,8 @@
       gap: 10px;
       margin-top: 6px;
       font-size: 0.65rem;
+      flex: 0 0 auto;
+      overflow: hidden;
     }
     .legend-item { display: flex; align-items: center; gap: 3px; }
     .legend-line { width: 12px; height: 2px; border-radius: 2px; }
@@ -331,6 +373,9 @@
       border-top: 1px dashed #000;
       margin-top: 8px;
       padding-top: 8px;
+      overflow: hidden;
+      flex: 1 1 auto;
+      min-height: 0;
     }
     .bd-header {
       display: flex;
@@ -340,8 +385,9 @@
       font-weight: 900;
       font-size: 0.78rem;
       margin-bottom: 6px;
+      flex: 0 0 auto;
     }
-    .bd-content { display: none; }
+    .bd-content { display: none; overflow: hidden; }
     .bd-content.open { display: block; }
 
     .bd-result {
@@ -353,6 +399,10 @@
       margin-top: 8px;
       font-size: 0.8rem;
       font-weight: 900;
+      flex: 0 0 auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .algorithm-flow {
@@ -367,6 +417,8 @@
       font-size: 0.7rem;
       flex-wrap: wrap;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden; /* ✅ sin scroll */
+      flex: 0 0 auto;
     }
     .flow-step {
       padding: 5px 8px;
@@ -403,6 +455,9 @@
       border-radius: 10px;
       backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      flex: 0 0 auto;
+      overflow: hidden;
+      min-height: 52px;
     }
     .btn-generate {
       background: #000;
@@ -413,9 +468,20 @@
       cursor: pointer;
       font-weight: 900;
       font-size: 0.86rem;
+      flex: 0 0 auto;
     }
-    .credit { font-size: 0.7rem; font-weight: 600; color: #000; }
+    .credit {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: #000;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-left: 10px;
+      min-width: 0;
+    }
 
+    /* ✅ MODALES: los ÚNICOS con scroll permitido */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -433,7 +499,7 @@
       max-width: 920px;
       width: 92%;
       max-height: 85vh;
-      overflow-y: auto; /* ✅ aquí sí se permite */
+      overflow-y: auto; /* ✅ permitido (ℹ y resumen) */
       position: relative;
     }
     .modal-close {
@@ -500,6 +566,10 @@
       gap: 10px;
       margin-top: 10px;
     }
+    @media (max-width: 720px){
+      .info-grid { grid-template-columns: 1fr; }
+    }
+
     .info-card {
       background: #f9fafb;
       padding: 10px;
@@ -510,7 +580,6 @@
     .info-card p, .info-card ul { font-size: 0.75rem; color: #374151; line-height: 1.35; }
     .info-card ul{ margin-left: 16px; }
 
-    /* ✅ límites humanos + aviso visual */
     input:invalid{
       outline: 2px solid #DC2626;
       border-color: #DC2626;
@@ -526,6 +595,8 @@
       color: #7F1D1D;
       display: none;
       white-space: pre-wrap;
+      overflow: hidden;
+      flex: 0 0 auto;
     }
     .field-error.show{ display:block; }
   </style>
@@ -809,6 +880,7 @@
         <button class="tab-btn" id="tabBtnOther" type="button" onclick="openInfoTab('tabOther')">Otros</button>
       </div>
 
+      <!-- ✅ Mantengo tu contenido ℹ tal cual -->
       <div class="tab-panel" id="tabUse">
         <div class="info-grid">
           <div class="info-card">
@@ -1468,24 +1540,8 @@ Siguiente paso:
       return lines.join('\n');
     }
 
-    /* ✅ NUEVO: plan corto para pantalla principal (sin scroll) */
-    function buildGeneralPlanShort(){
-      const full = buildGeneralPlan();
-
-      if (!hasEverCalculated) return full;
-      if (current.interpretable === null || current.interpretable === false) return full;
-
-      const maxLines = 10;
-      const lines = full.split('\n').filter(Boolean);
-
-      if (lines.length <= maxLines) return full;
-
-      return lines.slice(0, maxLines).join('\n') + '\n… (ver “Generar Informe” o ℹ para el detalle)';
-    }
-
-    /* ✅ Cambiado: mostrar versión corta en pantalla */
     function updatePlan(){
-      document.getElementById('planBox').textContent = buildGeneralPlanShort();
+      document.getElementById('planBox').textContent = buildGeneralPlan();
     }
 
     function drawChart(){
@@ -1600,7 +1656,7 @@ Siguiente paso:
       lines.push(`- ${getBDLine()}`);
       lines.push('');
       lines.push('ORIENTACIÓN CLÍNICA / PRÓXIMOS PASOS:');
-      lines.push(buildGeneralPlan()); /* ✅ informe con plan completo */
+      lines.push(buildGeneralPlan());
 
       document.getElementById('reportContent').textContent = lines.join('\n');
       document.getElementById('reportModal').style.display = 'flex';
@@ -1680,7 +1736,6 @@ Siguiente paso:
       resetSteps();
       updateOutputs();
       drawChart();
-      updatePlan();
     };
   </script>
 </body>
