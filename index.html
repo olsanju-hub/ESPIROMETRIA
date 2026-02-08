@@ -594,7 +594,7 @@
         <div class="grade-detail" id="gradoDetalle"></div>
 
         <div class="plan-section">
-          <div class="plan-title">Manejo paso a paso (borrador)</div>
+          <div class="plan-title">Manejo paso a paso</div>
           <div class="plan-note">Se bloqueará si la prueba no es válida. La clínica manda.</div>
 
           <div class="input-row">
@@ -867,7 +867,7 @@
 
           <div class="plan-section" style="margin-top: 0; padding-top: 0; border-top: none;">
             <div class="plan-title">Orientación y pasos</div>
-            <div class="plan-note">Se bloquea si la prueba no es válida. Se refina con tu bibliografía.</div>
+            <div class="plan-note">Se bloquea si la prueba no es válida.</div>
             <div class="plan-box" id="m_planBox">—</div>
           </div>
 
@@ -894,7 +894,6 @@
       </section>
     </div>
 
-    <!-- ✅ Eliminado footer global (evita botón duplicado y conflictos en móvil). -->
     <div style="text-align:right; font-size:.72rem; font-weight:600; color:#000; padding: 0 6px; flex-shrink:0;">
       Hecho por Guillermo J. Olivero Sanjuanelo
     </div>
@@ -913,8 +912,40 @@
     <div class="modal">
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
       <h3>Información útil</h3>
+
+      <!-- ✅ ACTUALIZADO: contenido ℹ -->
       <div class="hint">
-        Pendiente de ampliar: contenido clínico completo del botón ℹ + tratamiento/seguimiento detallado en “Manejo”.
+        <strong>1) Qué significa cada dato</strong><br>
+        • <strong>FEV1</strong>: flujo/limitación al aire en el primer segundo.<br>
+        • <strong>FVC</strong>: volumen total espirado forzado; si baja puede ser restricción o atrapamiento.<br>
+        • <strong>FEV1/FVC</strong> (RATIO): regla operativa para obstrucción (en esta app: corte fijo 70).<br>
+        • <strong>%REF</strong>: porcentaje del predicho (sirve para graduar y contextualizar).<br><br>
+
+        <strong>2) Regla operativa de patrón (lo que hace la app)</strong><br>
+        • <strong>OBSTRUCTIVO</strong>: ratio &lt; 70.<br>
+        • Si obstructivo y <strong>FVC %REF ≤80</strong>: “obstructivo con FVC baja” (atrapamiento vs mixto).<br>
+        • <strong>NO obstructivo</strong>: ratio ≥ 70. Si además <strong>FVC %REF ≤80</strong>: “restrictivo sugerido”.<br>
+        • Si NO obstructivo y <strong>FVC %REF &gt;80</strong>: “normal” según cortes.<br><br>
+
+        <strong>3) Calidad: cuándo NO interpretar</strong><br>
+        • Si no es interpretable, evita decisiones basadas en esta prueba: repetir con técnica y reproducibilidad.<br>
+        • Si la calidad está <strong>pendiente</strong> (faltan datos), la app bloquea la interpretación.<br><br>
+
+        <strong>4) Prueba broncodilatadora (PBD)</strong><br>
+        • Positiva: sugiere variabilidad del flujo aéreo.<br>
+        • Negativa: no descarta asma ni EPOC.<br>
+        • La interpretación correcta siempre integra clínica y contexto.<br><br>
+
+        <strong>5) Limitaciones importantes</strong><br>
+        • Espirometría “normal” no descarta asma entre crisis.<br>
+        • “Restrictivo sugerido” no confirma restricción: si cambia conducta, se confirma con volúmenes (TLC).<br>
+        • Si la clínica es desproporcionada, hay que salir del papel: revisar diagnóstico diferencial y comorbilidades.<br><br>
+
+        <strong>6) Cuándo plantear derivación (reglas simples)</strong><br>
+        • Prueba repetida no interpretable / técnica imposible.<br>
+        • Duda diagnóstica relevante (asma vs EPOC vs solapamiento) que cambia tratamiento.<br>
+        • Obstrucción moderada-grave, síntomas desproporcionados o exacerbaciones repetidas.<br>
+        • Sospecha de restricción real o patrón mixto que condiciona decisiones.
       </div>
     </div>
   </div>
@@ -931,17 +962,13 @@
     };
     let hasEverCalculated = false;
 
-    // Permite coma decimal: el usuario puede escribir "3,11" y se interpreta como 3.11
     function sanitizeDecimal(inputEl){
       if (!inputEl) return;
       let v = (inputEl.value || '');
-      // mantener solo dígitos, coma, punto y signo menos (por si pega algo raro)
       v = v.replace(/[^\d,.\-]/g, '');
-      // Si hay más de un separador, dejamos el primero y quitamos los demás
       const firstComma = v.indexOf(',');
       const firstDot = v.indexOf('.');
       if (firstComma !== -1 && firstDot !== -1){
-        // si hay ambos, dejamos el primero que aparezca y quitamos el otro
         if (firstComma < firstDot) v = v.replace(/\./g, '');
         else v = v.replace(/,/g, '');
       }
@@ -1247,7 +1274,7 @@
             mainLine:`• Obstrucción: ratio ${ratio.toFixed(2)}% < 70%.`,
             subLine:`• Grado por FEV1 %REF = ${fev1Ref.toFixed(1)}% → ${g.label.toUpperCase()}.`,
             note:(fvcRef !== null && fvcRef <= 80)
-              ? '• FVC baja: puede ser atrapamiento (pseudorrestricción) o patrón mixto real; si cambia conducta, confirmar con volúmenes (TLC).'
+              ? '• FVC baja: atrapamiento (pseudorrestricción) vs mixto; si cambia conducta, confirmar con volúmenes (TLC).'
               : ''
           };
         } else {
@@ -1302,6 +1329,23 @@
       updatePlan();
     }
 
+    // ✅ NUEVO: helpers para manejo
+    function prettyContext(c){
+      if (c === 'seguimiento') return 'Seguimiento';
+      if (c === 'diagnostico') return 'Duda diagnóstica';
+      return 'Atención Primaria';
+    }
+    function prettySospecha(s){
+      if (s === 'epoc') return 'EPOC';
+      if (s === 'asma') return 'Asma';
+      if (s === 'otros') return 'Otros';
+      return 'No especificada';
+    }
+    function add(lines, t){ if (t) lines.push(t); }
+    function bullet(lines, t){ if (t) lines.push('• ' + t); }
+    function dash(lines, t){ if (t) lines.push('- ' + t); }
+
+    // ✅ ACTUALIZADO: manejo mucho más sólido
     function buildGeneralPlan(){
       if (!hasEverCalculated) return 'Introduce valores, añade calidad y calcula.';
 
@@ -1318,53 +1362,103 @@ Siguiente paso:
 
 No tomar decisiones basadas en esta prueba.
 Siguiente paso:
-- Repetir espirometría asegurando calidad y reproducibilidad.`;
+- Repetir espirometría asegurando calidad y reproducibilidad.
+- Revisar técnica, sellado, inicio explosivo, tos, finalización y reproducibilidad.`;
       }
 
       const patron = current.patron || '—';
       const sospecha = txt('sospecha');
       const contexto = txt('contexto');
+
       const ratio = num('ratioMF');
       const fvcRef = num('fvcRef');
       const fev1Ref = num('fev1Ref');
 
       const lines = [];
-      lines.push(`DX FUNCIONAL: ${patron}`);
-      if (current.severidad) lines.push(`Grado/nota: ${current.severidad}`);
-      lines.push(getBDLine());
-      lines.push('');
-      lines.push('PASOS (borrador, a completar con tu bibliografía):');
+      add(lines, `DX FUNCIONAL: ${patron}`);
+      if (current.severidad) add(lines, `Grado/nota: ${current.severidad}`);
+      add(lines, getBDLine());
+      add(lines, '');
+      add(lines, `Contexto: ${prettyContext(contexto)}`);
+      add(lines, `Sospecha clínica: ${prettySospecha(sospecha)}`);
+      add(lines, '');
+      add(lines, 'PASOS (orden práctico):');
 
+      // 0) Siempre
+      add(lines, '0) Antes de actuar');
+      bullet(lines, 'Correlacionar con clínica: síntomas, tabaco/exposición, variabilidad, exacerbaciones, comorbilidades.');
+      bullet(lines, 'Revisar técnica inhalatoria y adherencia si ya hay tratamiento.');
+      bullet(lines, 'Registrar valores y fecha (para comparar en seguimiento).');
+      add(lines, '');
+
+      // 1) Según patrón
       if (patron.includes('OBSTRUCTIVO')) {
-        lines.push('1) Confirmar calidad y revisar coherencia con clínica/exposición.');
-        lines.push('2) Integrar PBD con clínica: asma vs EPOC vs solapamiento.');
-        lines.push('3) Si FVC baja: atrapamiento vs restricción; si cambia conducta, considerar volúmenes (TLC).');
+        add(lines, '1) Interpretación funcional (obstrucción)');
+        bullet(lines, 'Confirmar que la obstrucción encaja con clínica y exposición.');
+        bullet(lines, 'Si FVC baja: pensar en atrapamiento (pseudorrestricción) vs mixto; si cambia conducta, confirmar con volúmenes (TLC).');
+        bullet(lines, 'Integrar PBD con clínica (variabilidad apoya asma/solapamiento).');
+        add(lines, '');
+
+        add(lines, '2) Orientación diagnóstica rápida');
+        if (sospecha === 'asma') {
+          bullet(lines, 'Si clínica compatible con asma: priorizar control de inflamación y variabilidad (evitar monoterapia broncodilatadora de larga duración).');
+          bullet(lines, 'Definir control: síntomas diurnos/nocturnos, uso de rescate, limitación, crisis.');
+        } else if (sospecha === 'epoc') {
+          bullet(lines, 'Si clínica compatible con EPOC: priorizar broncodilatación de mantenimiento y reducción de riesgo (tabaco, vacunas, ejercicio/rehabilitación).');
+          bullet(lines, 'Registrar exacerbaciones previas (frecuencia, gravedad, antibiótico/corticoide, ingresos).');
+        } else {
+          bullet(lines, 'Si no está claro (asma vs EPOC vs solapamiento): usar historia (variabilidad/atopia vs tabaco crónico) + respuesta a tratamiento + evolución.');
+        }
+        add(lines, '');
+
+        add(lines, '3) Seguimiento (muy operativo)');
+        bullet(lines, 'Revisar técnica inhalatoria en consulta (demostración + corrección).');
+        bullet(lines, 'Plan de revisión en semanas: síntomas, uso de rescate, tolerancia, exacerbaciones.');
+        bullet(lines, 'Repetir espirometría si: mala respuesta, duda diagnóstica, cambio clínico relevante o para documentar persistencia/variabilidad.');
+        add(lines, '');
+
+        add(lines, '4) Señales de “derivar / ampliar estudio”');
+        bullet(lines, 'Obstrucción moderada-grave con síntomas relevantes, o síntomas desproporcionados.');
+        bullet(lines, 'Exacerbaciones repetidas, o mala respuesta pese a buena técnica/adherencia.');
+        bullet(lines, 'Duda entre atrapamiento vs patrón mixto que cambie decisiones (considerar volúmenes/TLC).');
+
       } else if (patron.includes('RESTRICTIVO')) {
-        lines.push('1) Confirmar calidad.');
-        lines.push('2) Si cambia conducta: confirmar con volúmenes/TLC (según disponibilidad).');
-        lines.push('3) Integrar causas probables según clínica (obesidad/pared torácica/intersticial…).');
+        add(lines, '1) Interpretación funcional (restricción sugerida)');
+        bullet(lines, 'Esto es “sugerido” por FVC baja con ratio normal: no confirma restricción sin volúmenes (TLC).');
+        bullet(lines, 'Si afecta decisiones, confirmar con volúmenes y orientar estudio según clínica.');
+        add(lines, '');
+
+        add(lines, '2) Orientación clínica inicial');
+        bullet(lines, 'Revisar: obesidad, pared torácica, debilidad neuromuscular, secuelas pleurales, enfermedad intersticial, etc.');
+        bullet(lines, 'Si disnea progresiva, crepitantes, desaturación o Rx alterada: priorizar evaluación ampliada/derivación.');
+        add(lines, '');
+
+        add(lines, '3) Seguimiento');
+        bullet(lines, 'Si clínica leve/estable: control evolutivo + repetir función respiratoria si hay cambios.');
+        bullet(lines, 'Si clínica significativa: no esperar; completar estudio.');
+
       } else if (patron.includes('NORMAL')) {
-        lines.push('1) Normal no excluye asma intercrisis si clínica lo sugiere.');
-        lines.push('2) Repetir en fase sintomática si sospecha alta.');
-        lines.push('3) Considerar otras causas de disnea (IC, anemia, descondicionamiento…).');
+        add(lines, '1) Interpretación funcional (normal según cortes)');
+        bullet(lines, 'Una espirometría normal NO excluye asma intercrisis si la clínica sugiere variabilidad.');
+        bullet(lines, 'Si sospecha alta: repetir en fase sintomática y/o completar evaluación de variabilidad.');
+        add(lines, '');
+
+        add(lines, '2) Si persisten síntomas');
+        bullet(lines, 'Revisar diagnóstico diferencial: cardiaco, anemia, descondicionamiento, obesidad, rinitis/ERGE, ansiedad, etc.');
+        bullet(lines, 'Si hay banderas rojas (disnea progresiva, desaturación, hemoptisis, pérdida de peso, dolor torácico): ampliar estudio/derivar.');
+
       } else {
-        lines.push('1) Completar datos clave (RATIO y/o FVC %REF) para cerrar patrón.');
+        add(lines, '1) Completar datos para cerrar patrón');
+        bullet(lines, 'Introduce RATIO (MFEV1/MFVC).');
+        bullet(lines, 'Añade FVC %REF para diferenciar normal vs restricción sugerida.');
+        bullet(lines, 'Si hay obstrucción, añade FEV1 %REF para graduar.');
       }
 
-      lines.push('');
-      lines.push('Datos clave:');
-      if (ratio !== null) lines.push(`- RATIO = ${ratio.toFixed(2)}% (corte 70)`);
-      if (fvcRef !== null) lines.push(`- FVC %REF = ${fvcRef.toFixed(1)}%`);
-      if (fev1Ref !== null) lines.push(`- FEV1 %REF = ${fev1Ref.toFixed(1)}%`);
-
-      if (sospecha !== 'no') {
-        lines.push('');
-        lines.push(`Sospecha: ${sospecha.toUpperCase()}`);
-        lines.push('• Tratamiento/seguimiento: pendiente de completar con tu bibliografía.');
-      }
-
-      lines.push('');
-      lines.push(`Contexto: ${contexto === 'ap' ? 'Atención Primaria' : (contexto === 'seguimiento' ? 'Seguimiento' : 'Duda diagnóstica')}`);
+      add(lines, '');
+      add(lines, 'DATOS CLAVE (registro):');
+      if (ratio !== null) dash(lines, `RATIO = ${ratio.toFixed(2)}% (corte 70)`);
+      if (fvcRef !== null) dash(lines, `FVC %REF = ${fvcRef.toFixed(1)}%`);
+      if (fev1Ref !== null) dash(lines, `FEV1 %REF = ${fev1Ref.toFixed(1)}%`);
 
       return lines.join('\n');
     }
@@ -1466,7 +1560,6 @@ Siguiente paso:
       return window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
     }
 
-    // ✅ Informe: se genera al final (móvil) y en desktop solo con el botón "VER INFORME" (una sola entrada).
     function generarInforme(){
       if (!hasEverCalculated) {
         alert('Primero introduce valores y calcula.');
@@ -1638,9 +1731,9 @@ Siguiente paso:
         1: 'screen1',
         2: 'screen2',
         3: 'screen3',
-        4: 'screen4', // PBD
-        5: 'screen5', // Manejo
-        6: 'screen6'  // Informe final
+        4: 'screen4',
+        5: 'screen5',
+        6: 'screen6'
       };
 
       Object.values(screens).forEach(id=>{
