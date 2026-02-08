@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Interpretación de Espirometría (rápida)</title>
+  <title>Interpretación de Espirometría · rápida</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -440,6 +440,13 @@
       filter: grayscale(0.15);
       pointer-events: none;
     }
+
+    /* Evita zoom iOS al tocar inputs */
+    @media (max-width: 1024px) {
+      .input-group input, .input-group select {
+        font-size: 16px;
+      }
+    }
   </style>
 </head>
 
@@ -448,7 +455,7 @@
     <header>
       <div class="title-wrap">
         <img class="app-logo" src="logo-pulmones.png" alt="Logo pulmones">
-        <h1>Interpretación de Espirometría (rápida)</h1>
+        <h1>Interpretación de Espirometría · rápida</h1>
       </div>
       <div class="header-buttons">
         <button class="icon-btn" onclick="openInfoModal()" title="Información">ℹ</button>
@@ -458,39 +465,45 @@
 
     <div class="desktop-grid">
       <div class="card" id="deskParams">
-        <h2>Parámetros (PRE)</h2>
+        <h2>Parámetros · PRE</h2>
 
         <div class="input-row">
           <div class="input-group">
             <label>Mejor FVC (l)</label>
-            <input type="number" id="mejorFVC" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Ej: 4.85" oninput="calcularTodo()">
+            <input type="text" id="mejorFVC" inputmode="decimal" placeholder="Ej: 4,85"
+              oninput="sanitizeDecimalInput(this); calcularTodo()">
           </div>
           <div class="input-group">
             <label>Mejor FEV1 (l)</label>
-            <input type="number" id="mejorFEV1" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Ej: 3.11" oninput="calcularTodo()">
+            <input type="text" id="mejorFEV1" inputmode="decimal" placeholder="Ej: 3,11"
+              oninput="sanitizeDecimalInput(this); calcularTodo()">
           </div>
         </div>
 
         <div class="input-group">
           <label>MFEV1/MFVC (%)</label>
-          <input type="number" id="ratioMF" step="0.01" min="5" max="110" inputmode="decimal" placeholder="Del informe" oninput="calcularTodo()">
+          <input type="text" id="ratioMF" inputmode="decimal" placeholder="Del informe"
+            oninput="sanitizeDecimalInput(this); calcularTodo()">
           <div class="tiny">Si metes FEV1 y FVC, se autocalcula si este campo está vacío.</div>
         </div>
 
         <div class="input-row">
           <div class="input-group">
             <label>FVC %REF</label>
-            <input type="number" id="fvcRef" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 95" oninput="calcularTodo()">
+            <input type="text" id="fvcRef" inputmode="decimal" placeholder="Ej: 95"
+              oninput="sanitizeDecimalInput(this); calcularTodo()">
           </div>
           <div class="input-group">
             <label>FEV1 %REF</label>
-            <input type="number" id="fev1Ref" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 68" oninput="calcularTodo()">
+            <input type="text" id="fev1Ref" inputmode="decimal" placeholder="Ej: 68"
+              oninput="sanitizeDecimalInput(this); calcularTodo()">
           </div>
         </div>
 
         <div class="input-group">
           <label>FEF25%-75% %REF (opcional)</label>
-          <input type="number" id="fefRef" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 81" oninput="calcularTodo()">
+          <input type="text" id="fefRef" inputmode="decimal" placeholder="Ej: 81"
+            oninput="sanitizeDecimalInput(this); calcularTodo()">
         </div>
 
         <div class="field-error" id="fieldError"></div>
@@ -625,12 +638,13 @@
 
         <div class="input-group">
           <label>Mejor FEV1 (l) PRE</label>
-          <input type="number" id="bdFev1Pre" step="0.01" readonly>
+          <input type="text" id="bdFev1Pre" inputmode="decimal" readonly>
         </div>
 
         <div class="input-group">
           <label>Mejor FEV1 (l) POST</label>
-          <input type="number" id="bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Del informe post" oninput="calcularBD()">
+          <input type="text" id="bdFev1Post" inputmode="decimal" placeholder="Del informe post"
+            oninput="sanitizeDecimalInput(this); calcularBD()">
         </div>
 
         <div class="bd-result" id="bdresult">No calculada</div>
@@ -724,46 +738,40 @@
           <div class="input-row">
             <div class="input-group">
               <label>Mejor FVC (l)</label>
-              <input type="number" id="m_mejorFVC" step="0.01" min="0.20" max="8.00" inputmode="decimal"
-                placeholder="Ej: 4.85"
-                oninput="syncMobileToDesktop('mejorFVC', this.value); calcularTodo();">
+              <input type="text" id="m_mejorFVC" inputmode="decimal" placeholder="Ej: 4,85"
+                oninput="sanitizeDecimalInput(this); syncMobileToDesktop('mejorFVC', this.value); calcularTodo();">
             </div>
             <div class="input-group">
               <label>Mejor FEV1 (l)</label>
-              <input type="number" id="m_mejorFEV1" step="0.01" min="0.20" max="8.00" inputmode="decimal"
-                placeholder="Ej: 3.11"
-                oninput="syncMobileToDesktop('mejorFEV1', this.value); calcularTodo();">
+              <input type="text" id="m_mejorFEV1" inputmode="decimal" placeholder="Ej: 3,11"
+                oninput="sanitizeDecimalInput(this); syncMobileToDesktop('mejorFEV1', this.value); calcularTodo();">
             </div>
           </div>
 
           <div class="input-group">
             <label>MFEV1/MFVC (%)</label>
-            <input type="number" id="m_ratioMF" step="0.01" min="5" max="110" inputmode="decimal"
-              placeholder="Del informe"
-              oninput="syncMobileToDesktop('ratioMF', this.value); calcularTodo();">
+            <input type="text" id="m_ratioMF" inputmode="decimal" placeholder="Del informe"
+              oninput="sanitizeDecimalInput(this); syncMobileToDesktop('ratioMF', this.value); calcularTodo();">
             <div class="tiny">Si FEV1 y FVC están, se autocalcula si este campo está vacío.</div>
           </div>
 
           <div class="input-row">
             <div class="input-group">
               <label>FVC %REF</label>
-              <input type="number" id="m_fvcRef" step="0.1" min="10" max="250" inputmode="decimal"
-                placeholder="Ej: 95"
-                oninput="syncMobileToDesktop('fvcRef', this.value); calcularTodo();">
+              <input type="text" id="m_fvcRef" inputmode="decimal" placeholder="Ej: 95"
+                oninput="sanitizeDecimalInput(this); syncMobileToDesktop('fvcRef', this.value); calcularTodo();">
             </div>
             <div class="input-group">
               <label>FEV1 %REF</label>
-              <input type="number" id="m_fev1Ref" step="0.1" min="10" max="250" inputmode="decimal"
-                placeholder="Ej: 68"
-                oninput="syncMobileToDesktop('fev1Ref', this.value); calcularTodo();">
+              <input type="text" id="m_fev1Ref" inputmode="decimal" placeholder="Ej: 68"
+                oninput="sanitizeDecimalInput(this); syncMobileToDesktop('fev1Ref', this.value); calcularTodo();">
             </div>
           </div>
 
           <div class="input-group">
             <label>FEF25%-75% %REF (opcional)</label>
-            <input type="number" id="m_fefRef" step="0.1" min="10" max="250" inputmode="decimal"
-              placeholder="Ej: 81"
-              oninput="syncMobileToDesktop('fefRef', this.value); calcularTodo();">
+            <input type="text" id="m_fefRef" inputmode="decimal" placeholder="Ej: 81"
+              oninput="sanitizeDecimalInput(this); syncMobileToDesktop('fefRef', this.value); calcularTodo();">
           </div>
 
           <div class="field-error" id="m_fieldError"></div>
@@ -838,14 +846,14 @@
           <div class="step-footer">
             <button class="btn-secondary" onclick="goStep(3)">ATRÁS</button>
             <button class="btn-primary" onclick="goStep(5)">INFORME FINAL</button>
-            <button class="btn-primary" onclick="goStep('4b')">PBD (OPCIONAL)</button>
+            <button class="btn-primary" onclick="goStep('4b')">PBD · OPCIONAL</button>
           </div>
         </div>
       </section>
 
       <section class="screen" id="screen4b">
         <div class="card">
-          <h2>Paso 4bis · PBD (opcional)</h2>
+          <h2>Paso 4bis · PBD opcional</h2>
 
           <div class="hint">
             Criterios:
@@ -855,14 +863,13 @@
 
           <div class="input-group">
             <label>Mejor FEV1 (l) PRE</label>
-            <input type="number" id="m_bdFev1Pre" step="0.01" readonly>
+            <input type="text" id="m_bdFev1Pre" inputmode="decimal" readonly>
           </div>
 
           <div class="input-group">
             <label>Mejor FEV1 (l) POST</label>
-            <input type="number" id="m_bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal"
-              placeholder="Del informe post"
-              oninput="syncMobileToDesktop('bdFev1Post', this.value); calcularBD();">
+            <input type="text" id="m_bdFev1Post" inputmode="decimal" placeholder="Del informe post"
+              oninput="sanitizeDecimalInput(this); syncMobileToDesktop('bdFev1Post', this.value); calcularBD();">
           </div>
 
           <div class="bd-result" id="m_bdresult">No calculada</div>
@@ -899,7 +906,7 @@
   <div class="modal-overlay" id="reportModal">
     <div class="modal">
       <button class="modal-close" onclick="closeModal('reportModal')">X</button>
-      <h3>Informe (resumen)</h3>
+      <h3>Informe · resumen</h3>
       <pre class="report-text" id="reportContent"></pre>
       <button class="copy-btn" onclick="copiarInforme()">Copiar</button>
     </div>
@@ -910,7 +917,7 @@
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
       <h3>Información útil</h3>
       <div class="hint">
-        Pendiente de ampliar: contenido clínico completo del botón ℹ + tratamiento/seguimiento detallado en “Manejo”.
+        Pendiente de ampliar: contenido clínico completo del botón ℹ + tratamiento y seguimiento detallado en “Manejo”.
       </div>
     </div>
   </div>
@@ -927,12 +934,44 @@
     };
     let hasEverCalculated = false;
 
+    // --- Soporte coma decimal en móvil/escritorio ---
+    function normalizeDecimalString(s){
+      if (s == null) return '';
+      return String(s)
+        .trim()
+        .replace(/\s+/g,'')
+        .replace(',', '.')
+        .replace(/[^0-9.\-]/g,'');
+    }
+
+    function sanitizeDecimalInput(inputEl){
+      if (!inputEl) return;
+      let v = String(inputEl.value ?? '');
+      v = v.replace(/\s+/g, '');
+      // Permite coma o punto, pero solo uno "principal"
+      // 1) deja solo dígitos, coma, punto y signo
+      v = v.replace(/[^0-9,.\-]/g, '');
+      // 2) si hay más de un separador, deja el primero y elimina el resto
+      const firstSepIdx = v.search(/[,.]/);
+      if (firstSepIdx !== -1) {
+        const head = v.slice(0, firstSepIdx + 1);
+        const tail = v.slice(firstSepIdx + 1).replace(/[,.]/g, '');
+        v = head + tail;
+      }
+      // 3) normaliza coma a punto (para consistencia visual)
+      v = v.replace(',', '.');
+      inputEl.value = v;
+    }
+
     function num(id){
       const el = document.getElementById(id);
       if (!el) return null;
-      const v = parseFloat(el.value);
+      const raw = normalizeDecimalString(el.value);
+      if (raw === '' || raw === '-' || raw === '.' || raw === '-.') return null;
+      const v = parseFloat(raw);
       return isNaN(v) ? null : v;
     }
+
     function txt(id){
       const el = document.getElementById(id);
       return el ? (el.value || '').trim() : '';
@@ -1110,7 +1149,7 @@
         setFieldError(limitsError);
         current.interpretable = null;
         current.obstruccion = null;
-        current.patron = 'PENDIENTE (revisar valores)';
+        current.patron = 'PENDIENTE · revisar valores';
         current.severidad = '';
         current.severidadClass = '';
         renderGradeDetail('gradoDetalle', {
@@ -1142,7 +1181,7 @@
       }
 
       if (current.interpretable === null) {
-        current.patron = 'PENDIENTE (calidad no confirmada)';
+        current.patron = 'PENDIENTE · calidad no confirmada';
         current.severidad = '';
         current.severidadClass = '';
         current.obstruccion = null;
@@ -1165,7 +1204,7 @@
 
       if (current.interpretable === false) {
         current.patron = 'NO INTERPRETABLE';
-        current.severidad = 'Repetir (calidad/reproducibilidad insuficiente)';
+        current.severidad = 'Repetir · calidad o reproducibilidad insuficiente';
         current.severidadClass = '';
         current.obstruccion = null;
         renderGradeDetail('gradoDetalle', { show:false });
@@ -1181,7 +1220,7 @@
 
       if (ratio === null) {
         current.obstruccion = null;
-        current.patron = 'PENDIENTE (falta RATIO)';
+        current.patron = 'PENDIENTE · falta ratio';
         current.severidad = '';
         current.severidadClass = '';
         renderGradeDetail('gradoDetalle', {
@@ -1210,15 +1249,15 @@
       if (current.obstruccion) {
         if (hasFvcRef) {
           patron = (fvcRef <= 80)
-            ? 'OBSTRUCTIVO con FVC baja (atrapamiento vs mixto)'
+            ? 'OBSTRUCTIVO · FVC baja: atrapamiento vs mixto'
             : 'OBSTRUCTIVO';
         } else {
-          patron = 'OBSTRUCTIVO (falta FVC %REF para matizar)';
+          patron = 'OBSTRUCTIVO · falta FVC %REF';
         }
 
         const g = getObstructionGradeFromRef(fev1Ref);
         if (g) {
-          sev = `${g.label} (FEV1 ${fev1Ref.toFixed(1)}%REF)`;
+          sev = `${g.label} · FEV1 ${fev1Ref.toFixed(1)}%REF`;
           sevClass = g.cls;
           detail = {
             show:true, chip:'Obstrucción · grado',
@@ -1229,7 +1268,7 @@
               : ''
           };
         } else {
-          sev = 'Sin grado (falta FEV1 %REF)';
+          sev = 'Sin grado · falta FEV1 %REF';
           detail = {
             show:true, chip:'Obstrucción',
             mainLine:`• Obstrucción: ratio ${ratio.toFixed(2)}% < 70%.`,
@@ -1239,7 +1278,7 @@
         }
       } else {
         if (!hasFvcRef) {
-          patron = 'NO OBSTRUCCIÓN (falta FVC %REF para normal vs restricción sugerida)';
+          patron = 'NO OBSTRUCCIÓN · falta FVC %REF';
           detail = {
             show:true, chip:'Faltan datos',
             mainLine:`• NO obstrucción: ratio ${ratio.toFixed(2)}% ≥ 70%.`,
@@ -1248,8 +1287,8 @@
           };
         } else {
           if (fvcRef <= 80) {
-            patron = 'RESTRICTIVO (sugerido)';
-            sev = 'Confirmar con volúmenes/TLC si procede';
+            patron = 'RESTRICTIVO · sugerido';
+            sev = 'Confirmar con volúmenes o TLC si procede';
             detail = {
               show:true, chip:'Restricción sugerida',
               mainLine:`• NO obstrucción: ratio ${ratio.toFixed(2)}% ≥ 70%.`,
@@ -1258,7 +1297,7 @@
             };
           } else {
             patron = 'NORMAL';
-            sev = 'Sin alteraciones (según cortes)';
+            sev = 'Sin alteraciones · según cortes';
             sevClass = 'normal';
             detail = {
               show:true, chip:'Normal',
@@ -1284,7 +1323,7 @@
       if (!hasEverCalculated) return 'Introduce valores, añade calidad y calcula.';
 
       if (current.interpretable === null) {
-        return `CALIDAD: PENDIENTE
+        return `CALIDAD · PENDIENTE
 
 La app NO interpreta ni propone manejo hasta confirmar calidad.
 Siguiente paso:
@@ -1292,7 +1331,7 @@ Siguiente paso:
       }
 
       if (current.interpretable === false) {
-        return `DX FUNCIONAL: NO INTERPRETABLE
+        return `DX FUNCIONAL · NO INTERPRETABLE
 
 No tomar decisiones basadas en esta prueba.
 Siguiente paso:
@@ -1311,7 +1350,7 @@ Siguiente paso:
       if (current.severidad) lines.push(`Grado/nota: ${current.severidad}`);
       lines.push(getBDLine());
       lines.push('');
-      lines.push('PASOS (borrador, a completar con tu bibliografía):');
+      lines.push('PASOS · borrador, a completar con tu bibliografía');
 
       if (patron.includes('OBSTRUCTIVO')) {
         lines.push('1) Confirmar calidad y revisar coherencia con clínica/exposición.');
@@ -1402,14 +1441,14 @@ Siguiente paso:
       // Clásico
       const classicPos = (cambioAbs >= 0.2) && (cambioPor >= 12);
 
-      // Alternativo: >10% del predicho (si se puede inferir predicho de FEV1 con FEV1 %REF)
+      // Alternativo: >10% del predicho
       const fev1Ref = num('fev1Ref');
       let pred = null;
       let altPos = null;
       let cambioPredPor = null;
 
       if (fev1Ref !== null && fev1Ref > 0) {
-        pred = pre / (fev1Ref / 100); // predicho aproximado a partir de %REF y valor pre
+        pred = pre / (fev1Ref / 100);
         cambioPredPor = (cambioAbs / pred) * 100;
         altPos = (cambioPredPor > 10);
       }
@@ -1457,7 +1496,6 @@ Siguiente paso:
       const lines = buildFullReportLines();
       const text = lines.join('\n');
 
-      // En móvil: ir al Paso 5 directamente (sin modal)
       if (isMobileView()) {
         const box = document.getElementById('m_reportContent');
         if (box) box.textContent = text;
@@ -1465,18 +1503,17 @@ Siguiente paso:
         return;
       }
 
-      // Escritorio: modal
       document.getElementById('reportContent').textContent = text;
       document.getElementById('reportModal').style.display = 'flex';
     }
 
     function buildFullReportLines(){
       const lines = [];
-      lines.push('INFORME DE ESPIROMETRÍA (resumen)');
+      lines.push('INFORME DE ESPIROMETRÍA · resumen');
       lines.push(`Fecha: ${current.fecha}`);
       lines.push('');
 
-      lines.push('DATOS INTRODUCIDOS (PRE):');
+      lines.push('DATOS INTRODUCIDOS · PRE');
       lines.push(`- Mejor FVC (l): ${num('mejorFVC') === null ? '—' : num('mejorFVC').toFixed(2)}`);
       lines.push(`- Mejor FEV1 (l): ${num('mejorFEV1') === null ? '—' : num('mejorFEV1').toFixed(2)}`);
       lines.push(`- MFEV1/MFVC (%): ${num('ratioMF') === null ? '—' : num('ratioMF').toFixed(2)}`);
@@ -1485,26 +1522,26 @@ Siguiente paso:
       lines.push(`- FEF25%-75% %REF (opcional): ${num('fefRef') === null ? '—' : num('fefRef').toFixed(1)}`);
       lines.push('');
 
-      lines.push('CALIDAD:');
+      lines.push('CALIDAD');
       lines.push(`- Calidad suficiente (manual): ${txt('manualQuality') ? (txt('manualQuality')==='si'?'Sí':'No') : '—'}`);
-      lines.push(`- ATS/ERS (si usado): FVC ${txt('calidadFVC') || '—'} / FEV1 ${txt('calidadFEV1') || '—'} | Rep FVC ${txt('repFVC')||'—'} / Rep FEV1 ${txt('repFEV1')||'—'}`);
+      lines.push(`- ATS/ERS: FVC ${txt('calidadFVC') || '—'} / FEV1 ${txt('calidadFEV1') || '—'} | Rep FVC ${txt('repFVC')||'—'} / Rep FEV1 ${txt('repFEV1')||'—'}`);
       lines.push('');
 
       const bdPre = num('bdFev1Pre');
       const bdPost = num('bdFev1Post');
-      lines.push('PBD (si procede):');
+      lines.push('PBD · si procede');
       lines.push(`- Mejor FEV1 (l) PRE: ${bdPre === null ? '—' : bdPre.toFixed(2)}`);
       lines.push(`- Mejor FEV1 (l) POST: ${bdPost === null ? '—' : bdPost.toFixed(2)}`);
       lines.push('');
 
-      lines.push('RESULTADOS:');
+      lines.push('RESULTADOS');
       lines.push(`- INTERPRETABLE: ${current.interpretable === null ? '— (pendiente)' : (current.interpretable ? 'SÍ' : 'NO')}`);
       lines.push(`- Obstrucción (ratio <70): ${current.obstruccion === null ? '—' : (current.obstruccion ? 'SÍ' : 'NO')}`);
       lines.push(`- Patrón: ${current.patron || '—'}`);
       lines.push(`- Grado/nota: ${current.severidad || '—'}`);
       lines.push(`- ${getBDLine()}`);
       lines.push('');
-      lines.push('MANEJO / PRÓXIMOS PASOS:');
+      lines.push('MANEJO · próximos pasos');
       lines.push(buildGeneralPlan());
       return lines;
     }
@@ -1726,6 +1763,11 @@ Siguiente paso:
     }
 
     window.onload = function(){
+      // Normaliza coma->punto al escribir en todos los inputs decimales
+      document.querySelectorAll('input[inputmode="decimal"]').forEach(inp=>{
+        inp.addEventListener('input', ()=> sanitizeDecimalInput(inp));
+      });
+
       updateOutputs();
       updatePlan();
       syncDesktopToMobile();
