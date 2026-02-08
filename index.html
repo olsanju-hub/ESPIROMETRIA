@@ -4,22 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interpretación de Espirometría (rápida)</title>
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
 
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      height: 100vh;
-      overflow: hidden; /* ✅ nunca scroll global */
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      overflow: hidden;
       background: linear-gradient(135deg,
         rgba(245, 199, 66, 0.95) 0%,
         rgba(245, 199, 66, 0.88) 36%,
         rgba(255, 255, 255, 0.72) 52%,
         rgba(58, 160, 118, 0.88) 68%,
         rgba(58, 160, 118, 0.95) 100%);
-      color: #000;
+      color: #000000;
       position: relative;
     }
 
@@ -38,14 +44,13 @@
     }
 
     .container {
-      height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       padding: 10px;
       gap: 8px;
       position: relative;
       z-index: 1;
-      overflow: hidden; /* ✅ evita scroll interno */
     }
 
     header {
@@ -57,9 +62,7 @@
       border-radius: 10px;
       backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-      flex: 0 0 auto;
-      min-height: 52px;
-      gap: 10px;
+      flex-shrink: 0;
     }
 
     .title-wrap{
@@ -67,7 +70,6 @@
       align-items:center;
       gap:10px;
       min-width: 0;
-      flex: 1 1 auto;
     }
     .app-logo{
       width: 34px;
@@ -78,15 +80,10 @@
       background: #fff;
       flex: 0 0 auto;
     }
-    h1 {
-      font-size: 1.05rem;
-      font-weight: 800;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
 
-    .header-buttons { display: flex; gap: 8px; flex: 0 0 auto; }
+    h1 { font-size: 1.05rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .header-buttons { display: flex; gap: 8px; }
 
     button.icon-btn {
       width: 32px; height: 32px;
@@ -100,35 +97,46 @@
       align-items: center;
       justify-content: center;
       transition: transform 0.2s;
-      flex: 0 0 auto;
     }
     button.icon-btn:hover { transform: scale(1.06); }
 
-    /* ✅ grid base (desktop) */
+    /* ============================================
+       MAIN GRID - ESCRITORIO (4 columnas)
+       ============================================ */
     .main-grid {
       display: grid;
       grid-template-columns: 1fr 1fr 1.25fr 0.95fr;
       gap: 8px;
       flex: 1;
       min-height: 0;
-      overflow: hidden;
     }
 
-    @media (max-width: 1100px){
-      .main-grid { grid-template-columns: 1fr 1fr; }
-    }
-
-    /* ✅ Mobile: pasamos a “1 pantalla a la vez” (sin scroll) */
-    @media (max-width: 720px){
-      header { padding: 8px 12px; }
-      h1 { font-size: 1.0rem; }
-
-      .main-grid{
-        display: block;   /* no grid */
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
+    /* ============================================
+       MAIN GRID - MÓVIL (Horizontal scroll)
+       ============================================ */
+    @media (max-width: 1024px) {
+      .main-grid {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scroll-snap-type: x mandatory;
+        scroll-behavior: smooth;
+        gap: 12px;
+        padding-bottom: 4px;
+        /* Ocultar scrollbar pero mantener funcionalidad */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
       }
+      .main-grid::-webkit-scrollbar {
+        display: none;
+      }
+      
+      /* Reordenar tarjetas en móvil: Calidad (2) → Parámetros (1) → Interpretación (3) → PBD (4) */
+      .main-grid .card:nth-child(1) { order: 2; } /* Parámetros */
+      .main-grid .card:nth-child(2) { order: 1; } /* Calidad */
+      .main-grid .card:nth-child(3) { order: 3; } /* Interpretación */
+      .main-grid .card:nth-child(4) { order: 4; } /* PBD */
     }
 
     .card {
@@ -138,9 +146,18 @@
       backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
-      overflow: hidden; /* ✅ clave: nunca scroll en cards */
+      overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       min-height: 0;
+    }
+
+    @media (max-width: 1024px) {
+      .card {
+        flex: 0 0 85vw;
+        scroll-snap-align: start;
+        max-height: calc(100dvh - 180px);
+        padding: 12px;
+      }
     }
 
     .card h2 {
@@ -150,16 +167,35 @@
       border-bottom: 2px solid #000;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      flex: 0 0 auto;
+      flex-shrink: 0;
     }
 
-    .input-group { margin-bottom: 6px; flex: 0 0 auto; }
+    @media (max-width: 1024px) {
+      .card h2 {
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+      }
+    }
+
+    .input-group { margin-bottom: 6px; }
+    
+    @media (max-width: 1024px) {
+      .input-group { margin-bottom: 8px; }
+    }
+
     .input-group label {
       display: block;
       font-size: 0.72rem;
       font-weight: 800;
       margin-bottom: 2px;
     }
+
+    @media (max-width: 1024px) {
+      .input-group label {
+        font-size: 0.8rem;
+      }
+    }
+
     .input-group input, .input-group select {
       width: 100%;
       padding: 6px 7px;
@@ -170,11 +206,23 @@
       color: #000;
     }
 
+    @media (max-width: 1024px) {
+      .input-group input, .input-group select {
+        padding: 8px;
+        font-size: 0.9rem;
+      }
+    }
+
     .input-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 6px;
-      flex: 0 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      .input-row {
+        gap: 8px;
+      }
     }
 
     .btn-calc {
@@ -187,8 +235,16 @@
       font-weight: 900;
       font-size: 0.82rem;
       margin-top: auto;
-      flex: 0 0 auto;
     }
+    
+    @media (max-width: 1024px) {
+      .btn-calc {
+        padding: 10px;
+        font-size: 0.9rem;
+        margin-top: 10px;
+      }
+    }
+
     .btn-calc:hover { background: #222; }
 
     .hint {
@@ -200,11 +256,14 @@
       border: 1px solid #9CA3AF;
       background: #F9FAFB;
       color: #374151;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 6;
-      -webkit-box-orient: vertical;
-      flex: 0 0 auto;
+    }
+
+    @media (max-width: 1024px) {
+      .hint {
+        font-size: 0.78rem;
+        padding: 10px;
+        margin-top: 8px;
+      }
     }
 
     .tiny {
@@ -212,10 +271,12 @@
       color: #374151;
       line-height: 1.2;
       margin-top: 4px;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+    }
+
+    @media (max-width: 1024px) {
+      .tiny {
+        font-size: 0.75rem;
+      }
     }
 
     .quality-warning {
@@ -228,16 +289,28 @@
       margin-top: 8px;
       display: none;
       line-height: 1.25;
-      overflow: hidden;
-      flex: 0 0 auto;
     }
+    
+    @media (max-width: 1024px) {
+      .quality-warning {
+        font-size: 0.8rem;
+        padding: 12px;
+      }
+    }
+    
     .quality-warning.show { display: block; }
 
     .result-display {
       font-size: 0.8rem;
       line-height: 1.3;
-      flex: 0 0 auto;
     }
+
+    @media (max-width: 1024px) {
+      .result-display {
+        font-size: 0.85rem;
+      }
+    }
+
     .result-item {
       display: flex;
       justify-content: space-between;
@@ -246,6 +319,14 @@
       border-bottom: 1px dotted rgba(0,0,0,0.2);
       gap: 10px;
     }
+    
+    @media (max-width: 1024px) {
+      .result-item {
+        margin-bottom: 6px;
+        padding: 4px 0;
+      }
+    }
+
     .result-value { font-weight: 900; text-align: right; white-space: nowrap; }
 
     .pattern-box {
@@ -258,8 +339,16 @@
       font-weight: 900;
       font-size: 0.95rem;
       letter-spacing: 0.2px;
-      flex: 0 0 auto;
     }
+    
+    @media (max-width: 1024px) {
+      .pattern-box {
+        padding: 12px;
+        font-size: 1.1rem;
+        margin-top: 10px;
+      }
+    }
+
     .pattern-box.no-interpretable { background: #DC2626; }
 
     .severity {
@@ -269,11 +358,16 @@
       margin-top: 6px;
       text-align: center;
       font-weight: 900;
-      flex: 0 0 auto;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
+    
+    @media (max-width: 1024px) {
+      .severity {
+        font-size: 0.85rem;
+        padding: 10px;
+        margin-top: 8px;
+      }
+    }
+
     .severity.normal { background: #6EE7B7; color: #000; }
     .severity.leve { background: #FDE047; color: #000; }
     .severity.moderado { background: #FB923C; color: #000; }
@@ -292,11 +386,19 @@
       color: #111827;
       display: none;
       white-space: pre-wrap;
-      overflow: hidden;
-      flex: 0 0 auto;
     }
+    
+    @media (max-width: 1024px) {
+      .grade-detail {
+        font-size: 0.8rem;
+        padding: 10px;
+      }
+    }
+    
     .grade-detail.show{ display:block; }
+    
     .grade-detail .k { font-weight: 900; }
+    
     .grade-chip{
       display:inline-block;
       padding: 2px 7px;
@@ -308,6 +410,10 @@
       margin-left: 6px;
     }
 
+    /* ============================================
+       PLAN SECTION - RECOMENDACIONES
+       Siempre visible, especialmente importante en móvil
+       ============================================ */
     .plan-section{
       margin-top: 10px;
       padding-top: 10px;
@@ -316,25 +422,40 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      overflow: hidden;
-      flex: 1 1 auto;
+      flex: 1;
     }
+
+    @media (max-width: 1024px) {
+      .plan-section {
+        margin-top: 12px;
+        padding-top: 12px;
+        gap: 8px;
+      }
+    }
+
     .plan-title{
       font-size: 0.75rem;
       font-weight: 900;
       letter-spacing: 0.2px;
       text-transform: uppercase;
-      flex: 0 0 auto;
     }
+
+    @media (max-width: 1024px) {
+      .plan-title {
+        font-size: 0.85rem;
+      }
+    }
+
     .plan-note{
       font-size: 0.7rem;
       color: #374151;
       line-height: 1.25;
-      flex: 0 0 auto;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+    }
+
+    @media (max-width: 1024px) {
+      .plan-note {
+        font-size: 0.78rem;
+      }
     }
 
     .plan-box{
@@ -346,43 +467,35 @@
       color: #111827;
       line-height: 1.28;
       overflow: hidden;
+      max-height: none;
       min-height: 0;
       white-space: pre-wrap;
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 12;
-      flex: 1 1 auto;
+      -webkit-line-clamp: 10;
     }
 
-    #flowVolumeChart {
-      width: 100%;
-      height: 130px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #000;
-      flex: 0 0 auto;
+    @media (max-width: 1024px) {
+      .plan-box {
+        font-size: 0.82rem;
+        padding: 12px;
+        line-height: 1.35;
+        -webkit-line-clamp: 12;
+      }
     }
+
+    /* CURVA ELIMINADA - ya no existe #flowVolumeChart */
 
     .chart-legend {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 6px;
-      font-size: 0.65rem;
-      flex: 0 0 auto;
-      overflow: hidden;
+      display: none; /* Oculto ya que no hay curva */
     }
-    .legend-item { display: flex; align-items: center; gap: 3px; }
-    .legend-line { width: 12px; height: 2px; border-radius: 2px; }
 
     .bd-section {
       border-top: 1px dashed #000;
       margin-top: 8px;
       padding-top: 8px;
-      overflow: hidden;
-      flex: 1 1 auto;
-      min-height: 0;
     }
+
     .bd-header {
       display: flex;
       justify-content: space-between;
@@ -391,10 +504,23 @@
       font-weight: 900;
       font-size: 0.78rem;
       margin-bottom: 6px;
-      flex: 0 0 auto;
     }
-    .bd-content { display: none; overflow: hidden; }
-    .bd-content.open { display: block; }
+
+    @media (max-width: 1024px) {
+      .bd-header {
+        font-size: 0.85rem;
+        padding: 8px 0;
+      }
+    }
+
+    .bd-content { 
+      display: none; 
+    }
+    
+    /* En móvil, PBD siempre colapsada por defecto */
+    .bd-content.open { 
+      display: block; 
+    }
 
     .bd-result {
       background: #000;
@@ -405,13 +531,15 @@
       margin-top: 8px;
       font-size: 0.8rem;
       font-weight: 900;
-      flex: 0 0 auto;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
-    /* ✅ flujo (desktop) */
+    @media (max-width: 1024px) {
+      .bd-result {
+        padding: 10px;
+        font-size: 0.9rem;
+      }
+    }
+
     .algorithm-flow {
       background: rgba(255, 255, 255, 0.92);
       border-radius: 10px;
@@ -424,9 +552,24 @@
       font-size: 0.7rem;
       flex-wrap: wrap;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      overflow: hidden;
-      flex: 0 0 auto;
+      flex-shrink: 0;
     }
+
+    @media (max-width: 1024px) {
+      .algorithm-flow {
+        font-size: 0.65rem;
+        padding: 6px 8px;
+        gap: 4px;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        scrollbar-width: none;
+      }
+      .algorithm-flow::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
     .flow-step {
       padding: 5px 8px;
       border-radius: 15px;
@@ -436,6 +579,14 @@
       transition: all 0.25s;
       white-space: nowrap;
     }
+    
+    @media (max-width: 1024px) {
+      .flow-step {
+        padding: 4px 6px;
+        font-size: 0.6rem;
+      }
+    }
+
     .flow-step.active {
       background: #000;
       color: #fff;
@@ -453,29 +604,6 @@
     }
     .arrow { font-size: 0.9rem; color: #000; }
 
-    /* ✅ flujo (mobile): una sola línea */
-    @media (max-width: 720px){
-      .algorithm-flow{
-        flex-wrap: nowrap;
-        justify-content: space-between;
-        gap: 6px;
-        padding: 6px 8px;
-        font-size: 0.62rem;
-      }
-      .arrow{ display:none; }
-      .flow-step{
-        padding: 4px 6px;
-        border-radius: 999px;
-        font-weight: 900;
-        max-width: 16.5%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .flow-step::after{
-        content:"";
-      }
-    }
-
     footer {
       display: flex;
       justify-content: space-between;
@@ -485,11 +613,15 @@
       border-radius: 10px;
       backdrop-filter: blur(10px);
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      flex: 0 0 auto;
-      overflow: hidden;
-      min-height: 52px;
-      gap: 10px;
+      flex-shrink: 0;
     }
+
+    @media (max-width: 1024px) {
+      footer {
+        padding: 10px 12px;
+      }
+    }
+
     .btn-generate {
       background: #000;
       color: #fff;
@@ -499,21 +631,29 @@
       cursor: pointer;
       font-weight: 900;
       font-size: 0.86rem;
-      flex: 0 0 auto;
-    }
-    .credit {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: #000;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      min-width: 0;
-      flex: 1 1 auto;
-      text-align: right;
     }
 
-    /* ✅ MODALES: los ÚNICOS con scroll permitido */
+    @media (max-width: 1024px) {
+      .btn-generate {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
+    }
+
+    .credit { 
+      font-size: 0.7rem; 
+      font-weight: 600; 
+      color: #000; 
+    }
+
+    @media (max-width: 1024px) {
+      .credit {
+        font-size: 0.65rem;
+        max-width: 120px;
+        text-align: right;
+      }
+    }
+
     .modal-overlay {
       display: none;
       position: fixed;
@@ -531,7 +671,7 @@
       max-width: 920px;
       width: 92%;
       max-height: 85vh;
-      overflow-y: auto; /* ✅ permitido (ℹ, resumen, ATS) */
+      overflow-y: auto;
       position: relative;
     }
     .modal-close {
@@ -598,8 +738,11 @@
       gap: 10px;
       margin-top: 10px;
     }
-    @media (max-width: 720px){
-      .info-grid { grid-template-columns: 1fr; }
+    
+    @media (max-width: 768px) {
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .info-card {
@@ -627,90 +770,43 @@
       color: #7F1D1D;
       display: none;
       white-space: pre-wrap;
-      overflow: hidden;
-      flex: 0 0 auto;
     }
+    
+    @media (max-width: 1024px) {
+      .field-error {
+        font-size: 0.8rem;
+      }
+    }
+    
     .field-error.show{ display:block; }
 
-    /* ✅ Botón pequeño inline */
-    .mini-btn{
-      border: 1px solid #000;
-      background: #fff;
-      color: #000;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.75rem;
-      cursor: pointer;
-      line-height: 1;
-      white-space: nowrap;
+    /* Indicadores de scroll en móvil */
+    @media (max-width: 1024px) {
+      .scroll-indicator {
+        position: absolute;
+        bottom: 60px;
+        right: 10px;
+        background: rgba(0,0,0,0.7);
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 900;
+        z-index: 10;
+        animation: pulse 2s infinite;
+        pointer-events: none;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 1; }
+      }
     }
-    .mini-btn.primary{
-      background: #000;
-      color: #fff;
-    }
-
-    .row-between{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      gap: 8px;
-    }
-    .badge{
-      display:inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      border: 1px solid #000;
-      background: #fff;
-      font-weight: 900;
-      font-size: 0.70rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-    .badge.warn{ border-color:#DC2626; color:#7F1D1D; background: rgba(220,38,38,0.06); }
-
-    /* ✅ Mobile tabs (parámetros/calidad/interp/pbd) */
-    .mobile-nav{
-      display:none;
-      background: rgba(255,255,255,0.92);
-      border-radius: 10px;
-      padding: 6px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      gap: 6px;
-      flex: 0 0 auto;
-      overflow: hidden;
-    }
-    .mnav-btn{
-      flex: 1 1 0;
-      border: 1px solid #000;
-      background: #fff;
-      color: #000;
-      border-radius: 999px;
-      padding: 7px 8px;
-      font-weight: 900;
-      font-size: 0.72rem;
-      cursor: pointer;
-      line-height: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .mnav-btn.active{
-      background:#000;
-      color:#fff;
-    }
-
-    /* Mobile behavior */
-    @media (max-width: 720px){
-      .mobile-nav{ display:flex; }
-      /* solo se ve una “card panel” */
-      .card[data-panel]{ display:none; }
-      .card[data-panel].active{ display:flex; }
-      /* curva fuera en móvil */
-      #flowVolumeChart, .chart-legend{ display:none !important; }
+    
+    @media (min-width: 1025px) {
+      .scroll-indicator {
+        display: none;
+      }
     }
   </style>
 </head>
@@ -728,17 +824,9 @@
       </div>
     </header>
 
-    <!-- ✅ Mobile nav: una pantalla a la vez (sin scroll) -->
-    <div class="mobile-nav" aria-label="Navegación móvil">
-      <button class="mnav-btn active" id="mnavParams" onclick="setMobilePanel('params')">Parámetros</button>
-      <button class="mnav-btn" id="mnavQuality" onclick="setMobilePanel('quality')">Calidad</button>
-      <button class="mnav-btn" id="mnavInterp" onclick="setMobilePanel('interp')">Interpretación</button>
-      <button class="mnav-btn" id="mnavPbd" onclick="setMobilePanel('pbd')">PBD</button>
-    </div>
-
     <div class="main-grid">
-      <!-- PARÁMETROS (PRE) -->
-      <div class="card active" data-panel="params" id="panelParams">
+      <!-- PARÁMETROS (PRE) - Order 2 en móvil -->
+      <div class="card">
         <h2>Parámetros (PRE)</h2>
 
         <div class="input-row">
@@ -786,8 +874,8 @@
         <button class="btn-calc" onclick="calcularTodo()">Calcular</button>
       </div>
 
-      <!-- CALIDAD -->
-      <div class="card" data-panel="quality" id="panelQuality">
+      <!-- CALIDAD - Order 1 en móvil (PRIMERA) -->
+      <div class="card">
         <h2>Calidad</h2>
 
         <div class="input-group">
@@ -797,33 +885,63 @@
             <option value="si">Sí (interpretable)</option>
             <option value="no">No (no interpretable)</option>
           </select>
-          <div class="tiny">
-            Si seleccionas “Sí” o “No”, no hace falta rellenar ATS/ERS.
-            Si dejas “—”, rellena ATS/ERS (en el botón de abajo).
+          <div class="tiny">Si seleccionas "Sí" o "No", no hace falta rellenar ATS/ERS. Si dejas "—", ATS/ERS debe estar completo para interpretar.</div>
+        </div>
+
+        <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #000;">
+          <div class="input-row">
+            <div class="input-group">
+              <label>Grado ATS/ERS (PRE): FVC</label>
+              <select id="calidadFVC" onchange="calcularTodo()">
+                <option value="">—</option>
+                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Grado ATS/ERS (PRE): FEV1</label>
+              <select id="calidadFEV1" onchange="calcularTodo()">
+                <option value="">—</option>
+                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div class="row-between" style="margin-top:6px;">
-          <button class="mini-btn primary" onclick="openATSModal()">ATS/ERS</button>
-          <span class="badge" id="atsSummary">ATS/ERS: —</span>
-        </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label>Repetibilidad ATS/ERS (PRE): FVC</label>
+              <select id="repFVC" onchange="calcularTodo()">
+                <option value="">—</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Repetibilidad ATS/ERS (PRE): FEV1</label>
+              <select id="repFEV1" onchange="calcularTodo()">
+                <option value="">—</option>
+                <option value="si">Sí</option>
+                <option value="no">No</option>
+              </select>
+            </div>
+          </div>
 
-        <div class="hint">
-          Regla operativa (seguridad):
-          <br>• <strong>NO interpretable</strong> si calidad “F” o repetibilidad “No” en FVC o FEV1.
-          <br>• Si faltan datos ATS/ERS → “pendiente” (la app NO interpreta).
+          <div class="hint">
+            Regla operativa si usas ATS/ERS aquí:
+            <br>• <strong>NO interpretable</strong> si calidad "F" o repetibilidad "No" en FVC o FEV1.
+            <br>• Si faltan datos → "pendiente" (la app NO interpreta).
+          </div>
         </div>
 
         <div class="quality-warning" id="qualityWarning">
           <strong>NO INTERPRETABLE.</strong>
           <br>Evita decisiones basadas en esta prueba. Repetir asegurando calidad y repetibilidad.
         </div>
-
-        <button class="btn-calc" onclick="calcularTodo()">Calcular</button>
       </div>
 
-      <!-- INTERPRETACIÓN + PLAN -->
-      <div class="card" data-panel="interp" id="panelInterp">
+      <!-- INTERPRETACIÓN + PLAN - Order 3 en móvil -->
+      <div class="card">
         <h2>Interpretación</h2>
 
         <div class="result-display">
@@ -857,6 +975,7 @@
         <div class="severity" id="severidad"></div>
         <div class="grade-detail" id="gradoDetalle"></div>
 
+        <!-- PLAN SECTION - SIEMPRE VISIBLE -->
         <div class="plan-section">
           <div class="plan-title">Orientación y manejo</div>
           <div class="plan-note">Devuelve patrón funcional + próximos pasos. La clínica manda.</div>
@@ -885,61 +1004,50 @@
         </div>
       </div>
 
-      <!-- PBD (en desktop: curva+pbd; en móvil: solo PBD porque la curva se oculta por CSS) -->
-      <div class="card" data-panel="pbd" id="panelPbd">
-        <h2>Curva y PBD</h2>
+      <!-- PBD - Order 4 en móvil (sin curva) -->
+      <div class="card">
+        <h2>Prueba Broncodilatadora</h2>
 
-        <canvas id="flowVolumeChart"></canvas>
-        <div class="chart-legend">
-          <div class="legend-item">
-            <div class="legend-line" style="background:#000;"></div>
-            <span>PRE (esquemático)</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-line" style="background:#9CA3AF; height:1px; border-top:1px dashed #9CA3AF;"></div>
-            <span>Ref (esquemático)</span>
-          </div>
+        <div class="hint" style="margin-bottom: 10px;">
+          Criterio implementado (clásico): <strong>positiva</strong> si ΔFEV1 ≥200 ml y ≥12% respecto a PRE.
         </div>
 
-        <div class="bd-section">
-          <div class="bd-header" onclick="toggleBD()">
-            <span>Prueba Broncodilatadora</span>
-            <span id="bdArrow">▼</span>
-          </div>
+        <div class="input-group">
+          <label>Mejor FEV1 (l) PRE</label>
+          <input type="number" id="bdFev1Pre" step="0.01" readonly>
+        </div>
 
-          <div class="bd-content" id="bdContent">
-            <div class="input-group">
-              <label>Mejor FEV1 (l) PRE</label>
-              <input type="number" id="bdFev1Pre" step="0.01" readonly>
-            </div>
+        <div class="input-group">
+          <label>Mejor FEV1 (l) POST</label>
+          <input type="number" id="bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Del informe post" oninput="calcularBD()">
+        </div>
 
-            <div class="input-group">
-              <label>Mejor FEV1 (l) POST</label>
-              <input type="number" id="bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Del informe post" oninput="calcularBD()">
-            </div>
+        <div class="bd-result" id="bdresult">No calculada</div>
 
-            <div class="bd-result" id="bdresult">No calculada</div>
-
-            <div class="hint" style="margin-top:10px;">
-              Criterio implementado (clásico): <strong>positiva</strong> si ΔFEV1 ≥200 ml y ≥12% respecto a PRE.
-            </div>
-          </div>
+        <div class="hint" style="margin-top:10px;">
+          <strong>Interpretación:</strong><br>
+          • Positiva: sugiere variabilidad (compatible con asma)<br>
+          • Negativa: NO excluye asma ni EPOC<br>
+          • Siempre correlacionar con clínica
         </div>
       </div>
     </div>
 
-    <div class="algorithm-flow" aria-label="Progreso">
+    <!-- Indicador de scroll para móvil -->
+    <div class="scroll-indicator" id="scrollIndicador">Desliza →</div>
+
+    <div class="algorithm-flow">
       <div class="flow-step" id="step1">CALIDAD</div>
       <span class="arrow">→</span>
-      <div class="flow-step" id="step2">REPET</div>
+      <div class="flow-step" id="step2">REPETIBILIDAD</div>
       <span class="arrow">→</span>
-      <div class="flow-step" id="step3">RATIO&lt;0,70</div>
+      <div class="flow-step" id="step3">RATIO &lt; 0,70</div>
       <span class="arrow">→</span>
-      <div class="flow-step" id="step4">FVC≤80</div>
+      <div class="flow-step" id="step4">FVC %REF ≤80</div>
       <span class="arrow">→</span>
       <div class="flow-step" id="step5">PATRÓN</div>
       <span class="arrow">→</span>
-      <div class="flow-step" id="step6">GRADO</div>
+      <div class="flow-step" id="step6">GRADO (FEV1 %REF)</div>
     </div>
 
     <footer>
@@ -948,7 +1056,6 @@
     </footer>
   </div>
 
-  <!-- MODAL INFORME -->
   <div class="modal-overlay" id="reportModal">
     <div class="modal">
       <button class="modal-close" onclick="closeModal('reportModal')">X</button>
@@ -958,76 +1065,6 @@
     </div>
   </div>
 
-  <!-- MODAL ATS/ERS (para que NO se corte y solo haya scroll aquí) -->
-  <div class="modal-overlay" id="atsModal">
-    <div class="modal">
-      <button class="modal-close" onclick="closeModal('atsModal')">X</button>
-      <h3>ATS/ERS (PRE) · Calidad y repetibilidad</h3>
-
-      <div class="info-card" style="margin-bottom:10px;">
-        <p>
-          Esta sección solo se usa si en “Calidad suficiente” has dejado “— (usar ATS/ERS)”.
-          Si falta algún campo, la app deja <strong>INTERPRETABLE = —</strong> (pendiente).
-        </p>
-      </div>
-
-      <div class="info-grid">
-        <div class="info-card">
-          <h4>Grado ATS/ERS (PRE)</h4>
-          <div class="input-row">
-            <div class="input-group">
-              <label>FVC</label>
-              <select id="calidadFVC" onchange="calcularTodo(); updateATSSummary();">
-                <option value="">—</option>
-                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label>FEV1</label>
-              <select id="calidadFEV1" onchange="calcularTodo(); updateATSSummary();">
-                <option value="">—</option>
-                <option value="A">A</option><option value="B">B</option><option value="C">C</option>
-                <option value="D">D</option><option value="E">E</option><option value="F">F</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="info-card">
-          <h4>Repetibilidad ATS/ERS (PRE)</h4>
-          <div class="input-row">
-            <div class="input-group">
-              <label>FVC</label>
-              <select id="repFVC" onchange="calcularTodo(); updateATSSummary();">
-                <option value="">—</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label>FEV1</label>
-              <select id="repFEV1" onchange="calcularTodo(); updateATSSummary();">
-                <option value="">—</option>
-                <option value="si">Sí</option>
-                <option value="no">No</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="info-card" style="margin-top:10px;">
-        <p>
-          Regla (seguridad): si calidad “F” <strong>o</strong> repetibilidad “No” en FVC o FEV1 → <strong>NO interpretable</strong>.
-        </p>
-      </div>
-
-      <button class="copy-btn" onclick="closeModal('atsModal')">Listo</button>
-    </div>
-  </div>
-
-  <!-- MODAL INFO ℹ -->
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
@@ -1048,17 +1085,17 @@
             <h4>Cómo usar en 30–60 s</h4>
             <p>
               1) Copia del informe: <strong>MFEV1/MFVC (%)</strong>, <strong>FVC %REF</strong> y (si hay obstrucción) <strong>FEV1 %REF</strong>.<br>
-              2) En “Calidad suficiente” marca si es interpretable (si el informe lo deja claro).<br>
-              3) Pulsa “Calcular”. Si hay broncodilatadora, añade POST y se calcula sola.
+              2) En "Calidad suficiente" puedes marcar directamente si la prueba es interpretable (si el informe ya lo deja claro).<br>
+              3) Pulsa "Calcular". Si hay broncodilatadora, añade POST y se calcula sola.
             </p>
           </div>
           <div class="info-card">
             <h4>Qué devuelve</h4>
             <p>
-              • <strong>Interpretable</strong> (manual o ATS/ERS).<br>
+              • <strong>Interpretable</strong> (según tu tick o ATS/ERS).<br>
               • <strong>Patrón</strong>: normal / obstructivo (puro o mixto) / restrictivo sugerido.<br>
               • <strong>Grado</strong> de obstrucción (si hay FEV1 %REF).<br>
-              • “Plan” orientativo (no sustituye juicio clínico).
+              • Un "plan" orientativo para AP y seguimiento (no sustituye juicio clínico).
             </p>
           </div>
         </div>
@@ -1067,19 +1104,19 @@
       <div class="tab-panel" id="tabQual">
         <div class="info-grid">
           <div class="info-card">
-            <h4>Opción rápida: “Calidad suficiente”</h4>
+            <h4>Opción rápida: "Calidad suficiente"</h4>
             <p>
-              Úsala si el informe ya te deja claro que es válida/repetible o tú lo has visto.<br>
-              • “Sí” → la app interpreta.<br>
-              • “No” → la app corta y recomienda repetir.
+              Úsala si el informe ya te deja claro que la espirometría es válida/repetible o si tú lo has visto en las curvas.<br>
+              • "Sí" → la app interpreta.<br>
+              • "No" → la app corta y recomienda repetir.
             </p>
           </div>
           <div class="info-card">
             <h4>Si usas ATS/ERS</h4>
             <p>
-              Regla práctica:<br>
-              • Si calidad “F” o repetibilidad “No” → <strong>NO interpretable</strong>.<br>
-              • Si faltan datos → <strong>pendiente</strong>.
+              Regla práctica (de seguridad):<br>
+              • Si calidad "F" o repetibilidad "No" en FVC o FEV1 → <strong>NO interpretable</strong>.<br>
+              • Si faltan datos → <strong>pendiente</strong> (la app no interpreta).
             </p>
           </div>
         </div>
@@ -1090,25 +1127,29 @@
           <div class="info-card">
             <h4>Obstrucción (corte fijo)</h4>
             <p>
-              En esta app: <strong>obstrucción si MFEV1/MFVC (%) &lt; 70</strong>.
+              En esta app: <strong>obstrucción si MFEV1/MFVC (%) &lt; 70</strong>.<br>
+              Si algún día quieres LLN real y tu equipo lo aporta, se puede reintroducir.
             </p>
           </div>
           <div class="info-card">
             <h4>Restricción sugerida</h4>
             <p>
-              Si NO hay obstrucción y <strong>FVC %REF ≤80</strong> → <strong>restrictivo sugerido</strong>.
+              Si <strong>NO</strong> hay obstrucción y <strong>FVC %REF ≤80</strong> → <strong>restrictivo sugerido</strong>.<br>
+              Confirmación formal si cambia conducta: volúmenes/TLC (según disponibilidad/criterio).
             </p>
           </div>
           <div class="info-card">
             <h4>Mixto vs atrapamiento</h4>
             <p>
-              Si hay obstrucción y <strong>FVC %REF ≤80</strong> → “mixto” (restricción o atrapamiento).
+              Si hay obstrucción y <strong>FVC %REF ≤80</strong> → "mixto". En la práctica puede ser restricción o atrapamiento.<br>
+              Si el caso te cambia decisiones (p. ej. derivación/estudio), plantear volúmenes.
             </p>
           </div>
           <div class="info-card">
             <h4>Normal</h4>
             <p>
-              Sin obstrucción y FVC %REF &gt;80 → normal. Normal no excluye asma intercrisis.
+              Sin obstrucción y FVC %REF &gt;80 → normal.<br>
+              Importante: normal no excluye asma intercrisis ni disnea de otro origen.
             </p>
           </div>
         </div>
@@ -1119,13 +1160,29 @@
           <div class="info-card">
             <h4>Asma: qué buscar</h4>
             <p>
-              Variabilidad + clínica compatible. Espirometría normal no excluye asma intercrisis.
+              Clave: variabilidad + síntomas compatibles (episódicos, desencadenantes, nocturnidad, ejercicio).<br>
+              Espirometría normal no excluye asma si intercrisis.
             </p>
           </div>
           <div class="info-card">
             <h4>Broncodilatadora</h4>
             <p>
-              PBD positiva apoya variabilidad. PBD negativa no excluye asma.
+              PBD positiva apoya variabilidad (compatible con asma si clínica).<br>
+              PBD negativa no excluye asma (tratamiento previo, técnica, fase estable).
+            </p>
+          </div>
+          <div class="info-card">
+            <h4>Tratamiento (visión práctica AP)</h4>
+            <p>
+              Prioridades antes de "escalar": técnica inhalatoria real, adherencia, desencadenantes, comorbilidades (rinitis, reflujo, obesidad).<br>
+              En asma, evitar SABA "en solitario" como estrategia única si hay síntomas recurrentes; el controlador con ICS es el eje (según estrategia GINA).
+            </p>
+          </div>
+          <div class="info-card">
+            <h4>Cuándo derivar/reevaluar</h4>
+            <p>
+              Dudas diagnósticas persistentes, mala respuesta pese a buena técnica/adherencia, exacerbaciones, o necesidad repetida de escalada.<br>
+              Considerar pruebas complementarias disponibles (p. ej. FeNO, PEF seriado) según tu entorno.
             </p>
           </div>
         </div>
@@ -1136,13 +1193,27 @@
           <div class="info-card">
             <h4>EPOC: diagnóstico práctico</h4>
             <p>
-              Obstrucción persistente + exposición + síntomas crónicos. PBD positiva NO descarta EPOC.
+              Obstrucción persistente + exposición (tabaco/biomasa/ocupacional) + síntomas crónicos.<br>
+              Ojo: PBD positiva NO descarta EPOC.
             </p>
           </div>
           <div class="info-card">
-            <h4>Qué registrar</h4>
+            <h4>Qué registrar siempre</h4>
             <p>
-              Exacerbaciones, síntomas, tabaco, vacunación, técnica/adherencia, ejercicio/rehab.
+              Síntomas (CAT/mMRC si los usas), exacerbaciones últimos 12 meses, tabaco, vacunación, técnica/adherencia, actividad/rehabilitación.
+            </p>
+          </div>
+          <div class="info-card">
+            <h4>Manejo (marco GOLD)</h4>
+            <p>
+              Base: cese tabaco + vacunas + ejercicio/rehab si limitación + optimizar broncodilatación y técnica.<br>
+              Si exacerbaciones frecuentes o mala evolución, reconsiderar fenotipo/solapamiento y derivación.
+            </p>
+          </div>
+          <div class="info-card">
+            <h4>Cuándo sospechar "algo más"</h4>
+            <p>
+              Síntomas desproporcionados, exacerbaciones muy frecuentes, eosinofilia relevante o historia clara de asma/atopia → pensar solapamiento y ajustar enfoque.
             </p>
           </div>
         </div>
@@ -1151,15 +1222,20 @@
       <div class="tab-panel" id="tabOther">
         <div class="info-grid">
           <div class="info-card">
-            <h4>Otros usos en AP</h4>
+            <h4>Otros usos frecuentes en AP</h4>
             <p>
-              Disnea crónica, seguimiento, sospecha restrictiva (confirmar si cambia conducta).
+              • Disnea crónica (diferencial con IC, anemia, obesidad, ansiedad, descondicionamiento).<br>
+              • Seguimiento de asma/EPOC (tendencia más que "un número").<br>
+              • Sospecha de patrón restrictivo (obesidad, pared torácica, intersticial): confirmar si cambia conducta.
             </p>
           </div>
           <div class="info-card">
-            <h4>Regla mental</h4>
+            <h4>Regla mental que evita líos</h4>
             <p>
-              1) ¿Interpretable? 2) ¿Obstrucción? 3) ¿FVC baja? 4) Clínica manda.
+              1) Primero: ¿es interpretable?<br>
+              2) Luego: ¿hay obstrucción (ratio)?<br>
+              3) Después: ¿FVC baja sugiere restricción/mixto?<br>
+              4) Por último: correlaciona con clínica (si no encaja, repite o reevalúa).
             </p>
           </div>
         </div>
@@ -1182,38 +1258,11 @@
     let hasEverCalculated = false;
 
     function num(id){
-      const el = document.getElementById(id);
-      if (!el) return null;
-      const v = parseFloat(el.value);
+      const v = parseFloat(document.getElementById(id).value);
       return isNaN(v) ? null : v;
     }
     function txt(id){
-      const el = document.getElementById(id);
-      if (!el) return '';
-      return (el.value || '').trim();
-    }
-
-    // ✅ Mobile panels
-    function setMobilePanel(panel){
-      const map = {
-        params: 'panelParams',
-        quality:'panelQuality',
-        interp: 'panelInterp',
-        pbd:   'panelPbd'
-      };
-      Object.values(map).forEach(id=>{
-        const el = document.getElementById(id);
-        if (el) el.classList.remove('active');
-      });
-      const target = document.getElementById(map[panel]);
-      if (target) target.classList.add('active');
-
-      ['mnavParams','mnavQuality','mnavInterp','mnavPbd'].forEach(id=>{
-        const b = document.getElementById(id);
-        if (b) b.classList.remove('active');
-      });
-      const btn = document.getElementById(panel==='params'?'mnavParams':panel==='quality'?'mnavQuality':panel==='interp'?'mnavInterp':'mnavPbd');
-      if (btn) btn.classList.add('active');
+      return (document.getElementById(id).value || '').trim();
     }
 
     function setFieldError(msg){
@@ -1272,7 +1321,6 @@
       const fvc = num('mejorFVC');
       const fev1 = num('mejorFEV1');
       const ratioInput = document.getElementById('ratioMF');
-      if (!ratioInput) return;
       const raw = (ratioInput.value || '').trim();
       if (raw !== '') return;
       if (fvc && fev1 && fvc > 0) {
@@ -1323,26 +1371,7 @@
       document.getElementById('outFefRef').textContent = (fefRef===null) ? '—' : (fefRef.toFixed(1) + '%');
 
       const pre = num('mejorFEV1');
-      const preEl = document.getElementById('bdFev1Pre');
-      if (preEl) preEl.value = (pre===null) ? '' : pre.toFixed(2);
-    }
-
-    function updateATSSummary(){
-      const q1 = txt('calidadFVC') || '—';
-      const q2 = txt('calidadFEV1') || '—';
-      const r1 = txt('repFVC') || '—';
-      const r2 = txt('repFEV1') || '—';
-      const manual = txt('manualQuality');
-
-      const badge = document.getElementById('atsSummary');
-      if (!badge) return;
-
-      if (manual === 'si') { badge.textContent = 'ATS/ERS: no usado (manual: Sí)'; badge.className='badge'; return; }
-      if (manual === 'no') { badge.textContent = 'ATS/ERS: no usado (manual: No)'; badge.className='badge'; return; }
-
-      const incomplete = (q1==='—' || q2==='—' || r1==='—' || r2==='—');
-      badge.textContent = `ATS/ERS: FVC ${q1}/${r1} · FEV1 ${q2}/${r2}`;
-      badge.className = incomplete ? 'badge warn' : 'badge';
+      document.getElementById('bdFev1Pre').value = (pre===null) ? '' : pre.toFixed(2);
     }
 
     function computeInterpretability(){
@@ -1386,7 +1415,6 @@
         });
         showResult();
         updatePlan();
-        drawChart();
         return;
       }
       setFieldError(null);
@@ -1402,10 +1430,8 @@
       }
 
       const warn = document.getElementById('qualityWarning');
-      if (warn){
-        if (current.interpretable === false && hasEverCalculated) warn.classList.add('show');
-        else warn.classList.remove('show');
-      }
+      if (current.interpretable === false && hasEverCalculated) warn.classList.add('show');
+      else warn.classList.remove('show');
 
       if (current.interpretable === null) {
         current.patron = 'PENDIENTE (calidad no confirmada)';
@@ -1416,12 +1442,11 @@
           show:true,
           chip:'Calidad',
           mainLine:'• No se interpreta hasta confirmar calidad.',
-          subLine:'• Marca “Calidad suficiente: Sí/No” o completa ATS/ERS (FVC+FEV1 + repetibilidad).',
+          subLine:'• Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + repetibilidad).',
           note:''
         });
         showResult();
         updatePlan();
-        drawChart();
         return;
       }
 
@@ -1452,7 +1477,6 @@
           note:''
         });
         updatePlan();
-        drawChart();
         showResult();
         return;
       }
@@ -1550,7 +1574,6 @@
 
       showResult();
       updatePlan();
-      drawChart();
     }
 
     function showResultNoInterpretable(){
@@ -1562,7 +1585,6 @@
       sevDiv.className = 'severity';
       updateOutputs();
       updatePlan();
-      drawChart();
     }
 
     function showResult(){
@@ -1578,21 +1600,11 @@
       updateOutputs();
     }
 
-    function toggleBD(){
-      const content = document.getElementById('bdContent');
-      const arrow = document.getElementById('bdArrow');
-      if (!content || !arrow) return;
-      content.classList.toggle('open');
-      arrow.textContent = content.classList.contains('open') ? '▲' : '▼';
-    }
-
     function calcularBD(){
       const pre = num('bdFev1Pre');
       const post = num('bdFev1Post');
 
       const bd = document.getElementById('bdresult');
-      if (!bd) return;
-
       if (!pre || !post) {
         bd.textContent = 'No calculada';
         bd.style.background = '#000';
@@ -1639,7 +1651,7 @@
 
 La app no interpreta ni propone manejo hasta confirmar calidad.
 Siguiente paso:
-- Marca “Calidad suficiente: Sí/No” o completa ATS/ERS (FVC+FEV1 + repetibilidad).`;
+- Marca "Calidad suficiente: Sí/No" o completa ATS/ERS (FVC+FEV1 + repetibilidad).`;
       }
 
       if (current.interpretable === false) {
@@ -1675,10 +1687,10 @@ Siguiente paso:
       if (patron.includes('OBSTRUCTIVO')) {
         lines.push('- Correlacionar con clínica y exposición (asma/EPOC/solapamiento/otros).');
         lines.push('- Revisar técnica inhalatoria y adherencia antes de escalar tratamientos.');
-        lines.push('- Si “mixto”: pensar atrapamiento vs restricción; si cambia conducta, plantear volúmenes (TLC).');
+        lines.push('- Si "mixto": pensar atrapamiento vs restricción; si cambia conducta, plantear volúmenes (TLC).');
       } else if (patron.includes('RESTRICTIVO')) {
-        lines.push('- Restricción sugerida: si cambia conducta, confirmar con volúmenes (TLC).');
-        lines.push('- Revisar causas según clínica (obesidad, pared torácica, intersticial, neuromuscular).');
+        lines.push('- Restricción sugerida: si cambia conducta, confirmar con volúmenes (TLC) según disponibilidad.');
+        lines.push('- Revisar causas frecuentes según clínica (obesidad, pared torácica, intersticial, neuromuscular).');
       } else if (patron.includes('NORMAL')) {
         lines.push('- Normal no excluye patología si síntomas: repetir en fase sintomática si sospecha alta.');
         lines.push('- Considerar otras causas de disnea (IC, anemia, obesidad, ansiedad, etc.).');
@@ -1690,7 +1702,7 @@ Siguiente paso:
         lines.push('');
         lines.push('ASMA (orientación práctica):');
         lines.push('- PBD positiva apoya variabilidad; integrar con clínica típica.');
-        lines.push('- PBD negativa NO excluye asma.');
+        lines.push('- PBD negativa NO excluye asma (intercrisis, técnica, tratamiento previo).');
         lines.push('- Prioridad: técnica/adherencia/desencadenantes/comorbilidades antes de escalar.');
       }
 
@@ -1705,8 +1717,8 @@ Siguiente paso:
       if (sospecha === 'otros') {
         lines.push('');
         lines.push('OTROS:');
-        lines.push('- Útil en disnea crónica y seguimiento; la tendencia suele valer más que un valor aislado.');
-        lines.push('- Si patrón no encaja, repetir o revalorar calidad/medición.');
+        lines.push('- Útil como apoyo en disnea crónica y seguimiento; la tendencia suele valer más que un valor aislado.');
+        lines.push('- Si patrón no encaja con clínica, repetir o revalorar calidad/medición.');
       }
 
       lines.push('');
@@ -1714,86 +1726,28 @@ Siguiente paso:
       return lines.join('\n');
     }
 
-    function updatePlan(){
-      const box = document.getElementById('planBox');
-      if (box) box.textContent = buildGeneralPlan();
+    function buildGeneralPlanShort(){
+      const full = buildGeneralPlan();
+
+      if (!hasEverCalculated) return full;
+      if (current.interpretable === null || current.interpretable === false) return full;
+
+      const maxLines = 12;
+      const lines = full.split('\n').filter(Boolean);
+
+      if (lines.length <= maxLines) return full;
+
+      return lines.slice(0, maxLines).join('\n') + '\n… (ver "Generar Informe" o ℹ para el detalle)';
     }
 
-    function drawChart(){
-      const canvas = document.getElementById('flowVolumeChart');
-      if (!canvas) return;
-
-      const ctx = canvas.getContext('2d');
-
-      // si está oculto (móvil), no merece recalcular
-      const style = window.getComputedStyle(canvas);
-      if (style.display === 'none') return;
-
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      const w = canvas.width, h = canvas.height;
-
-      ctx.clearRect(0, 0, w, h);
-
-      const pad = 20;
-      const graphW = w - 2 * pad;
-      const graphH = h - 2 * pad;
-
-      const fvc = num('mejorFVC') || 0;
-      const fev1 = num('mejorFEV1') || 0;
-
-      const maxVol = Math.max(fvc, 6) * 1.1;
-      const maxFlow = Math.max(fev1 * 4, 10);
-
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(pad, pad);
-      ctx.lineTo(pad, h - pad);
-      ctx.lineTo(w - pad, h - pad);
-      ctx.stroke();
-
-      ctx.strokeStyle = '#9CA3AF';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([4, 3]);
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const t = i / 100;
-        const vol = 4 * t;
-        const flow = maxFlow * 0.9 * Math.exp(-2.5 * t) * (1 - 0.1 * t);
-        const x = pad + (vol / maxVol) * graphW;
-        const y = h - pad - (flow / maxFlow) * graphH;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
-
-      const obstructivo = (current.obstruccion === true);
-      ctx.strokeStyle = '#000';
-      ctx.lineWidth = 2.5;
-      ctx.setLineDash([]);
-      ctx.beginPath();
-      for (let i = 0; i <= 100; i++) {
-        const t = i / 100;
-        const vol = (fvc || 0) * t;
-        let flow;
-
-        if (obstructivo) flow = maxFlow * 0.65 * Math.exp(-3.5 * t) * (1 + 0.3 * t);
-        else flow = maxFlow * 0.85 * Math.exp(-2.5 * t) * (1 - 0.05 * t);
-
-        const x = pad + (vol / maxVol) * graphW;
-        const y = h - pad - (flow / maxFlow) * graphH;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.stroke();
+    function updatePlan(){
+      document.getElementById('planBox').textContent = buildGeneralPlanShort();
     }
 
     function calcularTodo(){
       hasEverCalculated = true;
       autoFillRatioIfEmpty();
       current.fecha = new Date().toLocaleDateString('es-ES');
-      updateATSSummary();
       calcularPatronYGrado();
       updatePlan();
     }
@@ -1819,9 +1773,8 @@ Siguiente paso:
       lines.push('');
 
       lines.push('CALIDAD:');
-      lines.push(`- Calidad suficiente (manual): ${txt('manualQuality') ? (txt('manualQuality')==='si'?'Sí':'No') : '— (ATS/ERS)'}`
-      );
-      lines.push(`- ATS/ERS: FVC ${txt('calidadFVC') || '—'} / FEV1 ${txt('calidadFEV1') || '—'} | Rep FVC ${txt('repFVC')||'—'} / Rep FEV1 ${txt('repFEV1')||'—'}`);
+      lines.push(`- Calidad suficiente (manual): ${txt('manualQuality') ? (txt('manualQuality')==='si'?'Sí':'No') : '—'}`);
+      lines.push(`- ATS/ERS (si usado): FVC ${txt('calidadFVC') || '—'} / FEV1 ${txt('calidadFEV1') || '—'} | Rep FVC ${txt('repFVC')||'—'} / Rep FEV1 ${txt('repFEV1')||'—'}`);
       lines.push('');
 
       const bdPre = num('bdFev1Pre');
@@ -1873,40 +1826,25 @@ Siguiente paso:
       openInfoTab('tabUse');
     }
 
-    function openATSModal(){
-      document.getElementById('atsModal').style.display = 'flex';
-      updateATSSummary();
-    }
-
     function closeModal(id){ document.getElementById(id).style.display = 'none'; }
 
     function clearAll(){
       [
         'mejorFVC','mejorFEV1','ratioMF','fvcRef','fev1Ref','fefRef',
         'bdFev1Post'
-      ].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
+      ].forEach(id => document.getElementById(id).value = '');
 
       ['manualQuality','calidadFVC','calidadFEV1','repFVC','repFEV1','sospecha','contexto'].forEach(id=>{
-        const el = document.getElementById(id);
-        if (!el) return;
-        if (id==='sospecha') el.value = 'no';
-        else if (id==='contexto') el.value = 'ap';
-        else el.value = '';
+        if (id==='sospecha') document.getElementById(id).value = 'no';
+        else if (id==='contexto') document.getElementById(id).value = 'ap';
+        else document.getElementById(id).value = '';
       });
 
       setFieldError(null);
 
-      const qw = document.getElementById('qualityWarning');
-      if (qw) qw.classList.remove('show');
-
-      const bd = document.getElementById('bdresult');
-      if (bd){
-        bd.textContent = 'No calculada';
-        bd.style.background = '#000';
-      }
+      document.getElementById('qualityWarning').classList.remove('show');
+      document.getElementById('bdresult').textContent = 'No calculada';
+      document.getElementById('bdresult').style.background = '#000';
 
       current = {
         fecha: new Date().toLocaleDateString('es-ES'),
@@ -1917,42 +1855,35 @@ Siguiente paso:
 
       resetSteps();
       renderGradeDetail({show:false});
-      const p = document.getElementById('patron');
-      if (p){
-        p.textContent = 'PENDIENTE';
-        p.classList.remove('no-interpretable');
-      }
-      const s = document.getElementById('severidad');
-      if (s){
-        s.textContent = '';
-        s.className = 'severity';
-      }
-
-      const plan = document.getElementById('planBox');
-      if (plan) plan.textContent = 'Introduce valores, añade calidad y calcula.';
-
+      document.getElementById('patron').textContent = 'PENDIENTE';
+      document.getElementById('patron').classList.remove('no-interpretable');
+      document.getElementById('severidad').textContent = '';
+      document.getElementById('severidad').className = 'severity';
+      document.getElementById('planBox').textContent = 'Introduce valores, añade calidad y calcula.';
       updateOutputs();
-      updateATSSummary();
-      drawChart();
+    }
 
-      // móvil vuelve a parámetros
-      setMobilePanel('params');
+    // Ocultar indicador de scroll después de primer scroll
+    function setupScrollIndicator() {
+      const grid = document.querySelector('.main-grid');
+      const indicator = document.getElementById('scrollIndicador');
+      if (!grid || !indicator) return;
+      
+      grid.addEventListener('scroll', () => {
+        indicator.style.opacity = '0';
+        setTimeout(() => indicator.style.display = 'none', 300);
+      }, { once: true });
     }
 
     window.onclick = function(event){
       if (event.target.classList.contains('modal-overlay')) event.target.style.display = 'none';
     }
 
-    window.addEventListener('resize', () => drawChart());
-
     window.onload = function(){
       resetSteps();
       updateOutputs();
-      updateATSSummary();
-      drawChart();
-
-      // móvil: panel inicial params
-      setMobilePanel('params');
+      updatePlan();
+      setupScrollIndicator();
     };
   </script>
 </body>
