@@ -132,13 +132,13 @@
       backdrop-filter: blur(10px);
       display: flex;
       flex-direction: column;
-      overflow: hidden; /* desktop: sin scroll global */
+      overflow: hidden;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
       min-height: 0;
       height: 100%;
     }
 
-    /* ✅ FIX: en móvil, permite scroll dentro de la tarjeta para que no “desaparezcan” botones */
+    /* móvil: scroll dentro de la tarjeta */
     @media (max-width: 1024px){
       .mobile-steps .card{
         overflow-y: auto;
@@ -339,7 +339,6 @@
       flex-wrap: wrap;
     }
 
-    /* ✅ FIX: en móvil, hacemos el footer “sticky” dentro de la card para que siempre se vean botones (incluido PBD) */
     @media (max-width: 1024px){
       .step-footer{
         position: sticky;
@@ -384,35 +383,6 @@
       opacity: .55;
       cursor: not-allowed;
     }
-
-    footer.app-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.92);
-      padding: 8px 16px;
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      flex-shrink: 0;
-    }
-
-    /* ✅ FIX 1: en móvil ocultamos el footer global (evita “botón generar repetido” y que tape el informe final) */
-    @media (max-width: 1024px){
-      footer.app-footer{ display: none; }
-    }
-
-    .btn-generate {
-      background: #000;
-      color: #fff;
-      border: none;
-      padding: 8px 18px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 900;
-      font-size: 0.9rem;
-    }
-    .credit { font-size: 0.72rem; font-weight: 600; color: #000; text-align:right; }
 
     .modal-overlay {
       display: none;
@@ -466,11 +436,6 @@
       font-weight: 900;
     }
 
-    input:invalid{
-      outline: 2px solid #DC2626;
-      border-color: #DC2626;
-    }
-
     .locked {
       opacity: 0.55;
       filter: grayscale(0.15);
@@ -499,34 +464,40 @@
         <div class="input-row">
           <div class="input-group">
             <label>Mejor FVC (l)</label>
-            <input type="number" id="mejorFVC" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Ej: 4.85" oninput="calcularTodo()">
+            <input type="text" id="mejorFVC" inputmode="decimal" placeholder="Ej: 4,85"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
           </div>
           <div class="input-group">
             <label>Mejor FEV1 (l)</label>
-            <input type="number" id="mejorFEV1" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Ej: 3.11" oninput="calcularTodo()">
+            <input type="text" id="mejorFEV1" inputmode="decimal" placeholder="Ej: 3,11"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
           </div>
         </div>
 
         <div class="input-group">
           <label>MFEV1/MFVC (%)</label>
-          <input type="number" id="ratioMF" step="0.01" min="5" max="110" inputmode="decimal" placeholder="Del informe" oninput="calcularTodo()">
+          <input type="text" id="ratioMF" inputmode="decimal" placeholder="Del informe"
+                 oninput="sanitizeDecimal(this); calcularTodo()">
           <div class="tiny">Si metes FEV1 y FVC, se autocalcula si este campo está vacío.</div>
         </div>
 
         <div class="input-row">
           <div class="input-group">
             <label>FVC %REF</label>
-            <input type="number" id="fvcRef" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 95" oninput="calcularTodo()">
+            <input type="text" id="fvcRef" inputmode="decimal" placeholder="Ej: 95"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
           </div>
           <div class="input-group">
             <label>FEV1 %REF</label>
-            <input type="number" id="fev1Ref" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 68" oninput="calcularTodo()">
+            <input type="text" id="fev1Ref" inputmode="decimal" placeholder="Ej: 68"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
           </div>
         </div>
 
         <div class="input-group">
           <label>FEF25%-75% %REF (opcional)</label>
-          <input type="number" id="fefRef" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 81" oninput="calcularTodo()">
+          <input type="text" id="fefRef" inputmode="decimal" placeholder="Ej: 81"
+                 oninput="sanitizeDecimal(this); calcularTodo()">
         </div>
 
         <div class="field-error" id="fieldError"></div>
@@ -647,6 +618,10 @@
           </div>
 
           <div class="plan-box" id="planBox">Introduce valores, añade calidad y calcula.</div>
+
+          <div class="step-footer" style="margin-top: 10px;">
+            <button class="btn-primary" onclick="generarInforme()">VER INFORME</button>
+          </div>
         </div>
       </div>
 
@@ -661,12 +636,13 @@
 
         <div class="input-group">
           <label>Mejor FEV1 (l) PRE</label>
-          <input type="number" id="bdFev1Pre" step="0.01" readonly>
+          <input type="text" id="bdFev1Pre" inputmode="decimal" readonly>
         </div>
 
         <div class="input-group">
           <label>Mejor FEV1 (l) POST</label>
-          <input type="number" id="bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Del informe post" oninput="calcularBD()">
+          <input type="text" id="bdFev1Post" inputmode="decimal" placeholder="Del informe post"
+                 oninput="sanitizeDecimal(this); calcularBD()">
         </div>
 
         <div class="bd-result" id="bdresult">No calculada</div>
@@ -760,46 +736,40 @@
           <div class="input-row">
             <div class="input-group">
               <label>Mejor FVC (l)</label>
-              <input type="number" id="m_mejorFVC" step="0.01" min="0.20" max="8.00" inputmode="decimal"
-                placeholder="Ej: 4.85"
-                oninput="syncMobileToDesktop('mejorFVC', this.value); calcularTodo();">
+              <input type="text" id="m_mejorFVC" inputmode="decimal" placeholder="Ej: 4,85"
+                oninput="sanitizeDecimal(this); syncMobileToDesktop('mejorFVC', this.value); calcularTodo();">
             </div>
             <div class="input-group">
               <label>Mejor FEV1 (l)</label>
-              <input type="number" id="m_mejorFEV1" step="0.01" min="0.20" max="8.00" inputmode="decimal"
-                placeholder="Ej: 3.11"
-                oninput="syncMobileToDesktop('mejorFEV1', this.value); calcularTodo();">
+              <input type="text" id="m_mejorFEV1" inputmode="decimal" placeholder="Ej: 3,11"
+                oninput="sanitizeDecimal(this); syncMobileToDesktop('mejorFEV1', this.value); calcularTodo();">
             </div>
           </div>
 
           <div class="input-group">
             <label>MFEV1/MFVC (%)</label>
-            <input type="number" id="m_ratioMF" step="0.01" min="5" max="110" inputmode="decimal"
-              placeholder="Del informe"
-              oninput="syncMobileToDesktop('ratioMF', this.value); calcularTodo();">
+            <input type="text" id="m_ratioMF" inputmode="decimal" placeholder="Del informe"
+              oninput="sanitizeDecimal(this); syncMobileToDesktop('ratioMF', this.value); calcularTodo();">
             <div class="tiny">Si FEV1 y FVC están, se autocalcula si este campo está vacío.</div>
           </div>
 
           <div class="input-row">
             <div class="input-group">
               <label>FVC %REF</label>
-              <input type="number" id="m_fvcRef" step="0.1" min="10" max="250" inputmode="decimal"
-                placeholder="Ej: 95"
-                oninput="syncMobileToDesktop('fvcRef', this.value); calcularTodo();">
+              <input type="text" id="m_fvcRef" inputmode="decimal" placeholder="Ej: 95"
+                oninput="sanitizeDecimal(this); syncMobileToDesktop('fvcRef', this.value); calcularTodo();">
             </div>
             <div class="input-group">
               <label>FEV1 %REF</label>
-              <input type="number" id="m_fev1Ref" step="0.1" min="10" max="250" inputmode="decimal"
-                placeholder="Ej: 68"
-                oninput="syncMobileToDesktop('fev1Ref', this.value); calcularTodo();">
+              <input type="text" id="m_fev1Ref" inputmode="decimal" placeholder="Ej: 68"
+                oninput="sanitizeDecimal(this); syncMobileToDesktop('fev1Ref', this.value); calcularTodo();">
             </div>
           </div>
 
           <div class="input-group">
             <label>FEF25%-75% %REF (opcional)</label>
-            <input type="number" id="m_fefRef" step="0.1" min="10" max="250" inputmode="decimal"
-              placeholder="Ej: 81"
-              oninput="syncMobileToDesktop('fefRef', this.value); calcularTodo();">
+            <input type="text" id="m_fefRef" inputmode="decimal" placeholder="Ej: 81"
+              oninput="sanitizeDecimal(this); syncMobileToDesktop('fefRef', this.value); calcularTodo();">
           </div>
 
           <div class="field-error" id="m_fieldError"></div>
@@ -836,14 +806,44 @@
 
           <div class="step-footer">
             <button class="btn-secondary" onclick="goStep(2)">ATRÁS</button>
-            <button class="btn-primary" id="btnToPlan" onclick="goNextToPlan()">VER MANEJO</button>
+            <button class="btn-primary" onclick="goNextToBD()">PBD</button>
           </div>
         </div>
       </section>
 
       <section class="screen" id="screen4">
         <div class="card">
-          <h2>Paso 4 · Manejo</h2>
+          <h2>Paso 4 · Prueba broncodilatadora</h2>
+
+          <div class="hint">
+            Criterios:
+            <br>• Clásico: ΔFEV1 ≥200 ml y ≥12% vs PRE.
+            <br>• Alternativo (si hay FEV1 %REF): ΔFEV1 &gt;10% del predicho.
+          </div>
+
+          <div class="input-group">
+            <label>Mejor FEV1 (l) PRE</label>
+            <input type="text" id="m_bdFev1Pre" inputmode="decimal" readonly>
+          </div>
+
+          <div class="input-group">
+            <label>Mejor FEV1 (l) POST</label>
+            <input type="text" id="m_bdFev1Post" inputmode="decimal" placeholder="Del informe post"
+              oninput="sanitizeDecimal(this); syncMobileToDesktop('bdFev1Post', this.value); calcularBD();">
+          </div>
+
+          <div class="bd-result" id="m_bdresult">No calculada</div>
+
+          <div class="step-footer">
+            <button class="btn-secondary" onclick="goStep(3)">ATRÁS</button>
+            <button class="btn-primary" onclick="goNextToPlan()">VER MANEJO</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen5">
+        <div class="card">
+          <h2>Paso 5 · Manejo</h2>
 
           <div class="input-row">
             <div class="input-group">
@@ -872,64 +872,32 @@
           </div>
 
           <div class="step-footer">
-            <button class="btn-secondary" onclick="goStep(3)">ATRÁS</button>
-            <button class="btn-primary" onclick="goStep(5)">INFORME FINAL</button>
-            <button class="btn-primary" onclick="goStep('4b')">PBD (OPCIONAL)</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="screen" id="screen4b">
-        <div class="card">
-          <h2>Paso 4bis · PBD (opcional)</h2>
-
-          <div class="hint">
-            Criterios:
-            <br>• Clásico: ΔFEV1 ≥200 ml y ≥12% vs PRE.
-            <br>• Alternativo (si hay FEV1 %REF): ΔFEV1 &gt;10% del predicho.
-          </div>
-
-          <div class="input-group">
-            <label>Mejor FEV1 (l) PRE</label>
-            <input type="number" id="m_bdFev1Pre" step="0.01" readonly>
-          </div>
-
-          <div class="input-group">
-            <label>Mejor FEV1 (l) POST</label>
-            <input type="number" id="m_bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal"
-              placeholder="Del informe post"
-              oninput="syncMobileToDesktop('bdFev1Post', this.value); calcularBD();">
-          </div>
-
-          <div class="bd-result" id="m_bdresult">No calculada</div>
-
-          <div class="step-footer">
             <button class="btn-secondary" onclick="goStep(4)">ATRÁS</button>
-            <button class="btn-primary" onclick="goStep(5)">INFORME FINAL</button>
+            <button class="btn-primary" onclick="goStep(6)">INFORME FINAL</button>
           </div>
         </div>
       </section>
 
-      <section class="screen" id="screen5">
+      <section class="screen" id="screen6">
         <div class="card">
-          <h2>Paso 5 · Informe final</h2>
+          <h2>Paso 6 · Informe final</h2>
 
           <div class="hint">Resumen autocopiable. Si NO interpretable, el informe se limita a “repetir”.</div>
 
           <pre class="report-text" id="m_reportContent"></pre>
 
           <div class="step-footer">
-            <button class="btn-secondary" onclick="goStep(4)">ATRÁS</button>
+            <button class="btn-secondary" onclick="goStep(5)">ATRÁS</button>
             <button class="btn-primary" onclick="copiarInformeMovil()">COPIAR</button>
           </div>
         </div>
       </section>
     </div>
 
-    <footer class="app-footer">
-      <button class="btn-generate" onclick="generarInforme()">Generar Informe</button>
-      <span class="credit">Hecho por Guillermo J. Olivero Sanjuanelo</span>
-    </footer>
+    <!-- ✅ Eliminado footer global (evita botón duplicado y conflictos en móvil). -->
+    <div style="text-align:right; font-size:.72rem; font-weight:600; color:#000; padding: 0 6px; flex-shrink:0;">
+      Hecho por Guillermo J. Olivero Sanjuanelo
+    </div>
   </div>
 
   <div class="modal-overlay" id="reportModal">
@@ -963,10 +931,29 @@
     };
     let hasEverCalculated = false;
 
+    // Permite coma decimal: el usuario puede escribir "3,11" y se interpreta como 3.11
+    function sanitizeDecimal(inputEl){
+      if (!inputEl) return;
+      let v = (inputEl.value || '');
+      // mantener solo dígitos, coma, punto y signo menos (por si pega algo raro)
+      v = v.replace(/[^\d,.\-]/g, '');
+      // Si hay más de un separador, dejamos el primero y quitamos los demás
+      const firstComma = v.indexOf(',');
+      const firstDot = v.indexOf('.');
+      if (firstComma !== -1 && firstDot !== -1){
+        // si hay ambos, dejamos el primero que aparezca y quitamos el otro
+        if (firstComma < firstDot) v = v.replace(/\./g, '');
+        else v = v.replace(/,/g, '');
+      }
+      inputEl.value = v;
+    }
+
     function num(id){
       const el = document.getElementById(id);
       if (!el) return null;
-      const v = parseFloat(el.value);
+      const raw = (el.value || '').trim().replace(',', '.');
+      if (raw === '' || raw === '-' || raw === '.' || raw === '-.') return null;
+      const v = parseFloat(raw);
       return isNaN(v) ? null : v;
     }
     function txt(id){
@@ -1350,9 +1337,8 @@ Siguiente paso:
 
       if (patron.includes('OBSTRUCTIVO')) {
         lines.push('1) Confirmar calidad y revisar coherencia con clínica/exposición.');
-        lines.push('2) Si objetivo es variabilidad/diagnóstico y no hay PBD → realizar PBD.');
-        lines.push('3) Integrar con clínica: asma vs EPOC vs solapamiento.');
-        lines.push('4) Si FVC baja: atrapamiento vs restricción; si cambia conducta, considerar volúmenes (TLC).');
+        lines.push('2) Integrar PBD con clínica: asma vs EPOC vs solapamiento.');
+        lines.push('3) Si FVC baja: atrapamiento vs restricción; si cambia conducta, considerar volúmenes (TLC).');
       } else if (patron.includes('RESTRICTIVO')) {
         lines.push('1) Confirmar calidad.');
         lines.push('2) Si cambia conducta: confirmar con volúmenes/TLC (según disponibilidad).');
@@ -1480,6 +1466,7 @@ Siguiente paso:
       return window.matchMedia && window.matchMedia('(max-width: 1024px)').matches;
     }
 
+    // ✅ Informe: se genera al final (móvil) y en desktop solo con el botón "VER INFORME" (una sola entrada).
     function generarInforme(){
       if (!hasEverCalculated) {
         alert('Primero introduce valores y calcula.');
@@ -1492,7 +1479,7 @@ Siguiente paso:
       if (isMobileView()) {
         const box = document.getElementById('m_reportContent');
         if (box) box.textContent = text;
-        goStep(5);
+        goStep(6);
         return;
       }
 
@@ -1639,9 +1626,6 @@ Siguiente paso:
       if (deskInterp) deskInterp.classList.toggle('locked', lock);
       if (deskBD) deskBD.classList.toggle('locked', lock);
 
-      const btnToPlan = document.getElementById('btnToPlan');
-      if (btnToPlan) btnToPlan.disabled = (current.interpretable !== true);
-
       const mWarn = document.getElementById('m_qualityWarning');
       if (mWarn){
         if (current.interpretable === false && hasEverCalculated) mWarn.classList.add('show');
@@ -1654,9 +1638,9 @@ Siguiente paso:
         1: 'screen1',
         2: 'screen2',
         3: 'screen3',
-        4: 'screen4',
-        5: 'screen5',
-        '4b':'screen4b'
+        4: 'screen4', // PBD
+        5: 'screen5', // Manejo
+        6: 'screen6'  // Informe final
       };
 
       Object.values(screens).forEach(id=>{
@@ -1664,18 +1648,9 @@ Siguiente paso:
         if (el) el.classList.remove('active');
       });
 
-      if (n === 4) {
-        document.getElementById('screen4').classList.add('active');
-        return;
-      }
-      if (n === '4b') {
-        document.getElementById('screen4b').classList.add('active');
-        return;
-      }
-
       const id = screens[n];
       if (id) document.getElementById(id).classList.add('active');
-      if (n === 5) buildMobileFinalReport();
+      if (n === 6) buildMobileFinalReport();
     }
 
     function goNextFromQuality(){
@@ -1712,6 +1687,23 @@ Siguiente paso:
       goStep(3);
     }
 
+    function goNextToBD(){
+      hasEverCalculated = true;
+      calcularTodo();
+
+      if (current.interpretable !== true) {
+        alert('No interpretable o pendiente. No se puede continuar.');
+        goStep(1);
+        return;
+      }
+      if (num('ratioMF') === null) {
+        alert('Falta el RATIO (MFEV1/MFVC %).');
+        goStep(2);
+        return;
+      }
+      goStep(4);
+    }
+
     function goNextToPlan(){
       hasEverCalculated = true;
       calcularTodo();
@@ -1721,7 +1713,7 @@ Siguiente paso:
         goStep(1);
         return;
       }
-      goStep(4);
+      goStep(5);
     }
 
     function syncMobileToDesktop(id, value){
