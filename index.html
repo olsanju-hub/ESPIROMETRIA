@@ -7,10 +7,22 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* ✅ FIX iOS/Chrome: bloquear scroll fantasma */
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      height: 100vh;
+
+      /* ✅ FIX iOS: evita “bounce”/scroll fantasma con 100vh */
+      position: fixed;
+      inset: 0;
+      width: 100%;
       overflow: hidden;
+
       /* Más amarillo/verde, menos zona “blanca” */
       background: linear-gradient(135deg,
         rgba(245, 199, 66, 0.95) 0%,
@@ -37,7 +49,7 @@
     }
 
     .container {
-      height: 100vh;
+      height: 100dvh; /* ✅ mejor que 100vh en móvil */
       display: flex;
       flex-direction: column;
       padding: 10px;
@@ -275,6 +287,8 @@
       color: #374151;
       line-height: 1.25;
     }
+
+    /* ✅ FIX: NO SCROLL en pantalla principal (planBox) */
     .plan-box{
       background: #f9fafb;
       border: 1px solid #e5e7eb;
@@ -283,10 +297,16 @@
       font-size: 0.74rem;
       color: #111827;
       line-height: 1.28;
-      overflow: auto;
+
+      overflow: hidden;      /* ✅ */
+      max-height: none;      /* ✅ */
       min-height: 0;
-      max-height: 240px;
       white-space: pre-wrap;
+
+      /* recorte tipo resumen sin scroll */
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 10; /* ajusta 8–12 si quieres */
     }
 
     #flowVolumeChart {
@@ -413,7 +433,7 @@
       max-width: 920px;
       width: 92%;
       max-height: 85vh;
-      overflow-y: auto;
+      overflow-y: auto; /* ✅ aquí sí se permite */
       position: relative;
     }
     .modal-close {
@@ -490,7 +510,7 @@
     .info-card p, .info-card ul { font-size: 0.75rem; color: #374151; line-height: 1.35; }
     .info-card ul{ margin-left: 16px; }
 
-    /* ✅ NUEVO: límites humanos + aviso visual */
+    /* ✅ límites humanos + aviso visual */
     input:invalid{
       outline: 2px solid #DC2626;
       border-color: #DC2626;
@@ -532,19 +552,16 @@
         <div class="input-row">
           <div class="input-group">
             <label>Mejor FVC (l)</label>
-            <!-- ✅ límites humanos -->
             <input type="number" id="mejorFVC" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Ej: 4.85" oninput="calcularTodo()">
           </div>
           <div class="input-group">
             <label>Mejor FEV1 (l)</label>
-            <!-- ✅ límites humanos -->
             <input type="number" id="mejorFEV1" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Ej: 3.11" oninput="calcularTodo()">
           </div>
         </div>
 
         <div class="input-group">
           <label>MFEV1/MFVC (%)</label>
-          <!-- ✅ límites humanos -->
           <input type="number" id="ratioMF" step="0.01" min="20" max="110" inputmode="decimal" placeholder="Del informe" oninput="calcularTodo()">
           <div class="tiny">Tip: si metes Mejor FEV1 y Mejor FVC, te lo calcula y lo rellena si está vacío (y no lo pisa si lo escribes tú).</div>
         </div>
@@ -552,23 +569,19 @@
         <div class="input-row">
           <div class="input-group">
             <label>FVC %REF</label>
-            <!-- ✅ límites humanos -->
             <input type="number" id="fvcRef" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 150" oninput="calcularTodo()">
           </div>
           <div class="input-group">
             <label>FEV1 %REF</label>
-            <!-- ✅ límites humanos -->
             <input type="number" id="fev1Ref" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 125" oninput="calcularTodo()">
           </div>
         </div>
 
         <div class="input-group">
           <label>FEF25%-75% %REF (opcional)</label>
-          <!-- ✅ límites humanos -->
           <input type="number" id="fefRef" step="0.1" min="10" max="250" inputmode="decimal" placeholder="Ej: 81" oninput="calcularTodo()">
         </div>
 
-        <!-- ✅ NUEVO: avisos de rango / bloqueo de cálculo -->
         <div class="field-error" id="fieldError"></div>
 
         <div class="hint">
@@ -740,11 +753,9 @@
 
             <div class="input-group">
               <label>Mejor FEV1 (l) POST</label>
-              <!-- ✅ límites humanos + cálculo automático -->
               <input type="number" id="bdFev1Post" step="0.01" min="0.20" max="8.00" inputmode="decimal" placeholder="Del informe post" oninput="calcularBD()">
             </div>
 
-            <!-- ✅ eliminado el botón Calcular -->
             <div class="bd-result" id="bdresult">No calculada</div>
 
             <div class="hint" style="margin-top:10px;">
@@ -984,7 +995,6 @@
       return (document.getElementById(id).value || '').trim();
     }
 
-    /* ✅ NUEVO: errores de rango / bloqueo de interpretación */
     function setFieldError(msg){
       const box = document.getElementById('fieldError');
       if (!box) return;
@@ -1016,9 +1026,9 @@
     }
 
     function isGradeAcceptable(g){
-      if (!g) return null;         // desconocido
-      if (g === 'F') return false; // no aceptable
-      return true;                 // A-E aceptable
+      if (!g) return null;
+      if (g === 'F') return false;
+      return true;
     }
     function isRepOK(r){
       if (!r) return null;
@@ -1037,7 +1047,6 @@
       });
     }
 
-    /* ✅ Cambiado: NO pisar si el usuario ya escribió ratio */
     function autoFillRatioIfEmpty(){
       const fvc = num('mejorFVC');
       const fev1 = num('mejorFEV1');
@@ -1119,7 +1128,6 @@
       const step5 = document.getElementById('step5');
       const step6 = document.getElementById('step6');
 
-      /* ✅ 1) bloquear si hay valores fuera de rango */
       const limitsError = validateHumanLimits();
       if (limitsError) {
         setFieldError(limitsError);
@@ -1156,7 +1164,6 @@
       if (current.interpretable === false && hasEverCalculated) warn.classList.add('show');
       else warn.classList.remove('show');
 
-      /* ✅ 2) si calidad NO confirmada → NO interpretar */
       if (current.interpretable === null) {
         current.patron = 'PENDIENTE (calidad no confirmada)';
         current.severidad = '';
@@ -1335,7 +1342,6 @@
       arrow.textContent = content.classList.contains('open') ? '▲' : '▼';
     }
 
-    /* ✅ Cambiado: PBD automática, sin botón */
     function calcularBD(){
       const pre = num('bdFev1Pre');
       const post = num('bdFev1Post');
@@ -1357,8 +1363,8 @@
         return;
       }
 
-      const cambioAbs = post - pre;              // L
-      const cambioPor = (cambioAbs / pre) * 100; // %
+      const cambioAbs = post - pre;
+      const cambioPor = (cambioAbs / pre) * 100;
       const esPositiva = (cambioAbs >= 0.2) && (cambioPor >= 12);
 
       const absMl = Math.round(cambioAbs * 1000);
@@ -1382,7 +1388,6 @@
     function buildGeneralPlan(){
       if (!hasEverCalculated) return 'Introduce valores, añade calidad y calcula.';
 
-      /* ✅ Si calidad no confirmada: no dar plan clínico */
       if (current.interpretable === null) {
         return `CALIDAD: PENDIENTE
 
@@ -1463,8 +1468,24 @@ Siguiente paso:
       return lines.join('\n');
     }
 
+    /* ✅ NUEVO: plan corto para pantalla principal (sin scroll) */
+    function buildGeneralPlanShort(){
+      const full = buildGeneralPlan();
+
+      if (!hasEverCalculated) return full;
+      if (current.interpretable === null || current.interpretable === false) return full;
+
+      const maxLines = 10;
+      const lines = full.split('\n').filter(Boolean);
+
+      if (lines.length <= maxLines) return full;
+
+      return lines.slice(0, maxLines).join('\n') + '\n… (ver “Generar Informe” o ℹ para el detalle)';
+    }
+
+    /* ✅ Cambiado: mostrar versión corta en pantalla */
     function updatePlan(){
-      document.getElementById('planBox').textContent = buildGeneralPlan();
+      document.getElementById('planBox').textContent = buildGeneralPlanShort();
     }
 
     function drawChart(){
@@ -1579,7 +1600,7 @@ Siguiente paso:
       lines.push(`- ${getBDLine()}`);
       lines.push('');
       lines.push('ORIENTACIÓN CLÍNICA / PRÓXIMOS PASOS:');
-      lines.push(buildGeneralPlan());
+      lines.push(buildGeneralPlan()); /* ✅ informe con plan completo */
 
       document.getElementById('reportContent').textContent = lines.join('\n');
       document.getElementById('reportModal').style.display = 'flex';
@@ -1659,6 +1680,7 @@ Siguiente paso:
       resetSteps();
       updateOutputs();
       drawChart();
+      updatePlan();
     };
   </script>
 </body>
