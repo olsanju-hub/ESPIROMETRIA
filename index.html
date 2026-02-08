@@ -458,58 +458,8 @@
     </header>
 
     <div class="desktop-grid">
-      <div class="card" id="deskParams">
-        <h2>Parámetros (PRE)</h2>
 
-        <div class="input-row">
-          <div class="input-group">
-            <label>Mejor FVC (l)</label>
-            <input type="text" id="mejorFVC" inputmode="decimal" placeholder="Ej: 4,85"
-                   oninput="sanitizeDecimal(this); calcularTodo()">
-          </div>
-          <div class="input-group">
-            <label>Mejor FEV1 (l)</label>
-            <input type="text" id="mejorFEV1" inputmode="decimal" placeholder="Ej: 3,11"
-                   oninput="sanitizeDecimal(this); calcularTodo()">
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>MFEV1/MFVC (%)</label>
-          <input type="text" id="ratioMF" inputmode="decimal" placeholder="Del informe"
-                 oninput="sanitizeDecimal(this); calcularTodo()">
-          <div class="tiny">Si metes FEV1 y FVC, se autocalcula si este campo está vacío.</div>
-        </div>
-
-        <div class="input-row">
-          <div class="input-group">
-            <label>FVC %REF</label>
-            <input type="text" id="fvcRef" inputmode="decimal" placeholder="Ej: 95"
-                   oninput="sanitizeDecimal(this); calcularTodo()">
-          </div>
-          <div class="input-group">
-            <label>FEV1 %REF</label>
-            <input type="text" id="fev1Ref" inputmode="decimal" placeholder="Ej: 68"
-                   oninput="sanitizeDecimal(this); calcularTodo()">
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>FEF25%-75% %REF (opcional)</label>
-          <input type="text" id="fefRef" inputmode="decimal" placeholder="Ej: 81"
-                 oninput="sanitizeDecimal(this); calcularTodo()">
-        </div>
-
-        <div class="field-error" id="fieldError"></div>
-
-        <div class="hint">
-          Para patrón rápido suele bastar con:
-          <br>• <strong>RATIO</strong> (corte fijo 70)
-          <br>• <strong>FVC %REF</strong> (80)
-          <br>El <strong>grado</strong> (si hay obstrucción) usa <strong>FEV1 %REF</strong>.
-        </div>
-      </div>
-
+      <!-- ✅ CAMBIO: primero CALIDAD -->
       <div class="card" id="deskQuality">
         <h2>Calidad</h2>
 
@@ -577,6 +527,60 @@
         </div>
       </div>
 
+      <!-- ✅ CAMBIO: luego PARÁMETROS -->
+      <div class="card" id="deskParams">
+        <h2>Parámetros (PRE)</h2>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label>Mejor FVC (l)</label>
+            <input type="text" id="mejorFVC" inputmode="decimal" placeholder="Ej: 4,85"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
+          </div>
+          <div class="input-group">
+            <label>Mejor FEV1 (l)</label>
+            <input type="text" id="mejorFEV1" inputmode="decimal" placeholder="Ej: 3,11"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>MFEV1/MFVC (%)</label>
+          <input type="text" id="ratioMF" inputmode="decimal" placeholder="Del informe"
+                 oninput="sanitizeDecimal(this); calcularTodo()">
+          <div class="tiny">Si metes FEV1 y FVC, se autocalcula si este campo está vacío.</div>
+        </div>
+
+        <div class="input-row">
+          <div class="input-group">
+            <label>FVC %REF</label>
+            <input type="text" id="fvcRef" inputmode="decimal" placeholder="Ej: 95"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
+          </div>
+          <div class="input-group">
+            <label>FEV1 %REF</label>
+            <input type="text" id="fev1Ref" inputmode="decimal" placeholder="Ej: 68"
+                   oninput="sanitizeDecimal(this); calcularTodo()">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>FEF25%-75% %REF (opcional)</label>
+          <input type="text" id="fefRef" inputmode="decimal" placeholder="Ej: 81"
+                 oninput="sanitizeDecimal(this); calcularTodo()">
+        </div>
+
+        <div class="field-error" id="fieldError"></div>
+
+        <div class="hint">
+          Para patrón rápido suele bastar con:
+          <br>• <strong>RATIO</strong> (corte fijo 70)
+          <br>• <strong>FVC %REF</strong> (80)
+          <br>El <strong>grado</strong> (si hay obstrucción) usa <strong>FEV1 %REF</strong>.
+        </div>
+      </div>
+
+      <!-- resto igual -->
       <div class="card" id="deskInterp">
         <h2>Diagnóstico + Manejo</h2>
 
@@ -656,6 +660,7 @@
       </div>
     </div>
 
+    <!-- móvil igual -->
     <div class="mobile-steps">
       <section class="screen active" id="screen1">
         <div class="card">
