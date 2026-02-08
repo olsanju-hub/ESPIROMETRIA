@@ -139,6 +139,13 @@
       height: 100%;
     }
 
+    /* FIX: en escritorio, permitir scroll interno en las cards (evita “botones cortados” en iPad) */
+    .desktop-grid .card{
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 14px;
+    }
+
     @media (max-width: 1024px){
       .mobile-steps .card{
         overflow-y: auto;
@@ -597,8 +604,8 @@
         <div class="grade-detail" id="gradoDetalle"></div>
 
         <div class="plan-section">
-          <div class="plan-title">Manejo paso a paso</div>
-          <div class="plan-note">Se bloqueará si la prueba no es válida. La clínica manda.</div>
+          <div class="plan-title">Plan (operativo)</div>
+          <div class="plan-note">Si la prueba no es válida, no se propone plan. La clínica manda.</div>
 
           <div class="input-row">
             <div class="input-group">
@@ -652,8 +659,8 @@
         <div class="bd-result" id="bdresult">No calculada</div>
 
         <div class="hint" style="margin-top:10px;">
-          <strong>Interpretación:</strong><br>
-          • Positiva: sugiere variabilidad (compatible con asma)<br>
+          <strong>Interpretación rápida:</strong><br>
+          • Positiva: variabilidad del flujo (apoya asma/solapamiento)<br>
           • Negativa: NO excluye asma ni EPOC<br>
           • Siempre correlacionar con clínica
         </div>
@@ -918,39 +925,36 @@
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
-      <h3>Información útil</h3>
+      <h3>Guía rápida (qué meter y cómo leerlo)</h3>
 
       <div class="hint">
-        <strong>1) Qué significa cada dato</strong><br>
-        • <strong>FEV1</strong>: flujo/limitación al aire en el primer segundo.<br>
-        • <strong>FVC</strong>: volumen total espirado forzado; si baja puede ser restricción o atrapamiento.<br>
-        • <strong>FEV1/FVC</strong> (RATIO): regla operativa para obstrucción (en esta app: corte fijo 70).<br>
-        • <strong>%REF</strong>: porcentaje del predicho (sirve para graduar y contextualizar).<br><br>
+        <strong>A) Qué datos son “imprescindibles”</strong><br>
+        • 1) <strong>Calidad</strong>: marca “Sí/No” (o completa ATS/ERS + reproducibilidad).<br>
+        • 2) <strong>RATIO</strong> (FEV1/FVC): del informe. Si metes FEV1 y FVC, la app lo calcula si lo dejas vacío.<br>
+        • 3) <strong>FVC %REF</strong>: para diferenciar “normal” vs “restrictivo sugerido” y matizar si hay FVC baja.<br>
+        • 4) <strong>FEV1 %REF</strong>: solo para <strong>grado</strong> si hay obstrucción.<br><br>
 
-        <strong>2) Regla operativa de patrón (lo que hace la app)</strong><br>
-        • <strong>OBSTRUCTIVO</strong>: ratio &lt; 70.<br>
-        • Si obstructivo y <strong>FVC %REF ≤80</strong>: “obstructivo con FVC baja” (atrapamiento vs mixto).<br>
-        • <strong>NO obstructivo</strong>: ratio ≥ 70. Si además <strong>FVC %REF ≤80</strong>: “restrictivo sugerido”.<br>
-        • Si NO obstructivo y <strong>FVC %REF &gt;80</strong>: “normal” según cortes.<br><br>
+        <strong>B) Algoritmo (lo que hace la app)</strong><br>
+        1) Si <strong>NO interpretable</strong> → no se interpreta, se recomienda repetir.<br>
+        2) Si interpretable:<br>
+        • Si <strong>RATIO &lt; 70</strong> → <strong>OBSTRUCTIVO</strong>.<br>
+        &nbsp;&nbsp;↳ si además <strong>FVC %REF ≤80</strong> → “Obstructivo con FVC baja” (atrapamiento vs mixto).<br>
+        • Si <strong>RATIO ≥ 70</strong> → NO obstrucción.<br>
+        &nbsp;&nbsp;↳ si <strong>FVC %REF ≤80</strong> → <strong>Restrictivo sugerido</strong>.<br>
+        &nbsp;&nbsp;↳ si <strong>FVC %REF &gt;80</strong> → <strong>Normal</strong> (según cortes).<br><br>
 
-        <strong>3) Calidad: cuándo NO interpretar</strong><br>
-        • Si no es interpretable, evita decisiones basadas en esta prueba: repetir con técnica y reproducibilidad.<br>
-        • Si la calidad está <strong>pendiente</strong> (faltan datos), la app bloquea la interpretación.<br><br>
+        <strong>C) PBD (post broncodilatador)</strong><br>
+        • Úsala como <strong>variabilidad</strong>: una PBD positiva apoya asma/solapamiento, pero una negativa NO excluye asma ni EPOC.<br><br>
 
-        <strong>4) Prueba broncodilatadora (PBD)</strong><br>
-        • Positiva: sugiere variabilidad del flujo aéreo.<br>
-        • Negativa: no descarta asma ni EPOC.<br>
-        • La interpretación correcta siempre integra clínica y contexto.<br><br>
+        <strong>D) Limitaciones (para no engañarte)</strong><br>
+        • “Normal” no excluye asma entre crisis si la clínica encaja.<br>
+        • “Restrictivo sugerido” no confirma restricción: si cambia conducta, confirma con volúmenes (TLC).<br>
+        • “Obstructivo con FVC baja”: puede ser atrapamiento (pseudo-restricción) o mixto; si importa, confirma con volúmenes.<br><br>
 
-        <strong>5) Limitaciones importantes</strong><br>
-        • Espirometría “normal” no descarta asma entre crisis.<br>
-        • “Restrictivo sugerido” no confirma restricción: si cambia conducta, se confirma con volúmenes (TLC).<br>
-        • Si la clínica es desproporcionada, revisar diferencial y comorbilidades.<br><br>
-
-        <strong>6) Cuándo plantear derivación (reglas simples)</strong><br>
+        <strong>E) Derivar / ampliar estudio (reglas simples)</strong><br>
         • Prueba repetida no interpretable / técnica imposible.<br>
-        • Duda diagnóstica relevante que cambia tratamiento.<br>
-        • Obstrucción moderada-grave, síntomas desproporcionados o exacerbaciones repetidas.<br>
+        • Duda diagnóstica que cambia tratamiento.<br>
+        • Obstrucción moderada-grave con síntomas relevantes o exacerbaciones repetidas.<br>
         • Sospecha de restricción real o patrón mixto que condiciona decisiones.
       </div>
     </div>
