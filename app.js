@@ -722,11 +722,54 @@ function copiarInformeMovil(){
   navigator.clipboard.writeText(texto).then(() => alert('Informe copiado'));
 }
 
-/* ---------- modales ---------- */
+/* ---------- modales + HUB ℹ ---------- */
 
-function openInfoModal(){
+function openInfoModal(sectionId){
   const modal = document.getElementById('infoModal');
-  if (modal) modal.style.display = 'flex';
+  if (!modal) return;
+  modal.style.display = 'flex';
+
+  // si piden ir a una sección concreta, hacemos scroll dentro del modal
+  if (sectionId){
+    // pequeño delay para asegurar layout
+    setTimeout(() => {
+      const body = document.getElementById('infoBody');
+      const target = document.getElementById(sectionId);
+      if (!body || !target) return;
+
+      // scroll relativo al contenedor del modal
+      const bodyRect = body.getBoundingClientRect();
+      const tRect = target.getBoundingClientRect();
+      const delta = (tRect.top - bodyRect.top) - 10; // margen
+      body.scrollTop = Math.max(0, body.scrollTop + delta);
+
+      // foco visual breve
+      target.classList.add('pulse');
+      setTimeout(() => target.classList.remove('pulse'), 650);
+    }, 50);
+  }
+}
+
+function openPlanHelp(){
+  // regla: si no interpretable o calidad pendiente -> llevar a sección de CALIDAD
+  if (current.interpretable === null) { openInfoModal('info-calidad'); return; }
+  if (current.interpretable === false){ openInfoModal('info-no-interpretable'); return; }
+
+  const p = (current.patron || '').toUpperCase();
+  const sospecha = txt('sospecha'); // 'epoc'|'asma'|'otros'|'no'
+
+  if (p.includes('OBSTRUCTIVO')) {
+    if (sospecha === 'asma') { openInfoModal('info-plan-asma-obst'); return; }
+    if (sospecha === 'epoc') { openInfoModal('info-plan-epoc-obst'); return; }
+    openInfoModal('info-obstruccion');
+    return;
+  }
+
+  if (p.includes('RESTRICTIVO')) { openInfoModal('info-restriccion'); return; }
+  if (p.includes('NORMAL')) { openInfoModal('info-normal'); return; }
+
+  // si faltan datos (ratio/fvcRef) -> “qué meter”
+  openInfoModal('info-que-meter');
 }
 
 function closeModal(id){
