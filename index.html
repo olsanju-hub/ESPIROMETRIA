@@ -1,4 +1,4 @@
-<!-- index.html (completo) -->
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -44,7 +44,6 @@
     }
 
     .container {
-      height: 100vh;
       height: 100dvh;
       display: flex;
       flex-direction: column;
@@ -122,13 +121,7 @@
     }
     .screen.active { display: block; }
 
-    /*
-      BREAKPOINT ARREGLADO:
-      - Móvil: ancho <= 900px
-      - Tablet en vertical (hasta 1024px): también móvil
-      - iPad horizontal (1024px y landscape): escritorio
-    */
-    @media (max-width: 900px), (max-width: 1024px) and (orientation: portrait) {
+    @media (max-width: 1024px) {
       .desktop-grid { display: none; }
       .mobile-steps { display: block; }
     }
@@ -146,14 +139,15 @@
       height: 100%;
     }
 
-    /* Escritorio: scroll interno en cards */
+    /* Scroll interno en escritorio para evitar cortes (excepto la 3ª columna, que la ajustamos abajo) */
     .desktop-grid .card{
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 14px;
     }
 
-    @media (max-width: 900px), (max-width: 1024px) and (orientation: portrait) {
+    /* MÓVIL: scroll interno */
+    @media (max-width: 1024px){
       .mobile-steps .card{
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
@@ -259,6 +253,7 @@
       font-weight: 900;
       font-size: 1.05rem;
       letter-spacing: 0.2px;
+      flex-shrink: 0;
     }
     .pattern-box.no-interpretable { background: #DC2626; }
 
@@ -269,6 +264,7 @@
       margin-top: 8px;
       text-align: center;
       font-weight: 900;
+      flex-shrink: 0;
     }
     .severity.normal { background: #6EE7B7; color: #000; }
     .severity.leve { background: #FDE047; color: #000; }
@@ -287,6 +283,7 @@
       color: #111827;
       display: none;
       white-space: pre-wrap;
+      flex-shrink: 0;
     }
     .grade-detail.show{ display:block; }
     .grade-detail .k { font-weight: 900; }
@@ -316,11 +313,13 @@
       font-weight: 900;
       letter-spacing: 0.2px;
       text-transform: uppercase;
+      flex-shrink: 0;
     }
     .plan-note{
       font-size: 0.78rem;
       color: #374151;
       line-height: 1.25;
+      flex-shrink: 0;
     }
     .plan-box{
       background: #f9fafb;
@@ -333,6 +332,7 @@
       overflow: hidden;
       white-space: pre-wrap;
       flex: 1;
+      min-height: 0;
     }
 
     .bd-result {
@@ -351,9 +351,10 @@
       gap: 8px;
       margin-top: 10px;
       flex-wrap: wrap;
+      flex-shrink: 0;
     }
 
-    @media (max-width: 900px), (max-width: 1024px) and (orientation: portrait) {
+    @media (max-width: 1024px){
       .step-footer{
         position: sticky;
         bottom: 0;
@@ -455,6 +456,21 @@
       filter: grayscale(0.15);
       pointer-events: none;
     }
+
+    /* ========= FIX iPad: que NO haga scroll la 3ª columna (Diagnóstico + Manejo) ========= */
+    #deskInterp.card{
+      overflow: hidden;                 /* quita el scroll del contenedor */
+    }
+    #deskInterp .grade-detail.show{
+      max-height: 140px;                /* evita que el detalle “empuje” todo */
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #deskInterp .plan-box{
+      overflow: auto;                   /* el scroll, si hace falta, solo aquí */
+      -webkit-overflow-scrolling: touch;
+    }
+    /* ================================================================================ */
   </style>
 </head>
 
