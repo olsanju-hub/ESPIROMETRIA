@@ -1,4 +1,4 @@
-<!-- index.html -->
+<!-- index.html (completo) -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -416,8 +416,11 @@
       max-width: 920px;
       width: 92%;
       max-height: 85vh;
-      overflow-y: auto;
+      overflow: hidden; /* importante: el scroll lo lleva el body interno */
       position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
     .modal-close {
       position: absolute;
@@ -428,7 +431,34 @@
       background: none;
       border: none;
     }
-    .modal h3 { margin-bottom: 12px; font-size: 1.1rem; }
+    .modal h3 { margin-bottom: 4px; font-size: 1.1rem; }
+
+    .modal-nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding: 8px;
+      border: 1px dashed rgba(0,0,0,0.35);
+      border-radius: 10px;
+      background: #F9FAFB;
+      flex-shrink: 0;
+    }
+    .modal-nav button{
+      border: 1px solid #000;
+      background: #fff;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 900;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .modal-body{
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-right: 6px;
+      min-height: 0;
+    }
 
     .report-text {
       background: #f3f4f6;
@@ -459,18 +489,24 @@
 
     /* ========= FIX iPad: que NO haga scroll la 3ª columna (Diagnóstico + Manejo) ========= */
     #deskInterp.card{
-      overflow: hidden;                 /* quita el scroll del contenedor */
+      overflow: hidden;
     }
     #deskInterp .grade-detail.show{
-      max-height: 140px;                /* evita que el detalle “empuje” todo */
+      max-height: 140px;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
     }
     #deskInterp .plan-box{
-      overflow: auto;                   /* el scroll, si hace falta, solo aquí */
+      overflow: auto;
       -webkit-overflow-scrolling: touch;
     }
     /* ================================================================================ */
+
+    /* Highlight breve al saltar a sección */
+    .pulse{
+      outline: 3px solid rgba(0,0,0,0.65);
+      border-radius: 10px;
+    }
   </style>
 </head>
 
@@ -653,6 +689,7 @@
           <div class="plan-box" id="planBox">Introduce valores, añade calidad y calcula.</div>
 
           <div class="step-footer" style="margin-top: 10px;">
+            <button class="btn-secondary" onclick="openPlanHelp()">AYUDA (docencia)</button>
             <button class="btn-primary" onclick="generarInforme()">VER INFORME</button>
           </div>
         </div>
@@ -907,6 +944,7 @@
           </div>
 
           <div class="step-footer">
+            <button class="btn-secondary" onclick="openPlanHelp()">AYUDA (docencia)</button>
             <button class="btn-secondary" onclick="goStep(4)">ATRÁS</button>
             <button class="btn-primary" onclick="goStep(6)">INFORME FINAL</button>
           </div>
@@ -936,7 +974,7 @@
 
   <!-- MODAL INFORME -->
   <div class="modal-overlay" id="reportModal">
-    <div class="modal">
+    <div class="modal" style="overflow:auto; max-height:85vh;">
       <button class="modal-close" onclick="closeModal('reportModal')">X</button>
       <h3>Informe (resumen)</h3>
       <pre class="report-text" id="reportContent"></pre>
@@ -944,41 +982,104 @@
     </div>
   </div>
 
-  <!-- MODAL INFO -->
+  <!-- MODAL INFO (HUB) -->
   <div class="modal-overlay" id="infoModal">
     <div class="modal">
       <button class="modal-close" onclick="closeModal('infoModal')">X</button>
-      <h3>Guía rápida (qué meter y cómo leerlo)</h3>
+      <h3>Guía rápida (HUB)</h3>
 
-      <div class="hint">
-        <strong>A) Qué datos son “imprescindibles”</strong><br>
-        • 1) <strong>Calidad</strong>: marca “Sí/No” (o completa ATS/ERS + reproducibilidad).<br>
-        • 2) <strong>RATIO</strong> (FEV1/FVC): del informe. Si metes FEV1 y FVC, la app lo calcula si lo dejas vacío.<br>
-        • 3) <strong>FVC %REF</strong>: para diferenciar “normal” vs “restrictivo sugerido” y matizar si hay FVC baja.<br>
-        • 4) <strong>FEV1 %REF</strong>: solo para <strong>grado</strong> si hay obstrucción.<br><br>
+      <div class="modal-nav">
+        <button onclick="openInfoModal('info-que-meter')">Qué meter</button>
+        <button onclick="openInfoModal('info-calidad')">Calidad</button>
+        <button onclick="openInfoModal('info-obstruccion')">Obstrucción</button>
+        <button onclick="openInfoModal('info-restriccion')">Restricción</button>
+        <button onclick="openInfoModal('info-normal')">Normal</button>
+        <button onclick="openInfoModal('info-pbd')">PBD</button>
+        <button onclick="openInfoModal('info-derivar')">Derivar</button>
+      </div>
 
-        <strong>B) Algoritmo (lo que hace la app)</strong><br>
-        1) Si <strong>NO interpretable</strong> → no se interpreta, se recomienda repetir.<br>
-        2) Si interpretable:<br>
-        • Si <strong>RATIO &lt; 70</strong> → <strong>OBSTRUCTIVO</strong>.<br>
-        &nbsp;&nbsp;↳ si además <strong>FVC %REF ≤80</strong> → “Obstructivo con FVC baja” (atrapamiento vs mixto).<br>
-        • Si <strong>RATIO ≥ 70</strong> → NO obstrucción.<br>
-        &nbsp;&nbsp;↳ si <strong>FVC %REF ≤80</strong> → <strong>Restrictivo sugerido</strong>.<br>
-        &nbsp;&nbsp;↳ si <strong>FVC %REF &gt;80</strong> → <strong>Normal</strong> (según cortes).<br><br>
+      <div class="modal-body" id="infoBody">
+        <div class="hint" id="info-que-meter">
+          <strong>A) Qué datos son “imprescindibles”</strong><br>
+          • 1) <strong>Calidad</strong>: marca “Sí/No” (o completa ATS/ERS + reproducibilidad).<br>
+          • 2) <strong>RATIO</strong> (FEV1/FVC): del informe. Si metes FEV1 y FVC, la app lo calcula si lo dejas vacío.<br>
+          • 3) <strong>FVC %REF</strong>: para diferenciar “normal” vs “restrictivo sugerido” y matizar si hay FVC baja.<br>
+          • 4) <strong>FEV1 %REF</strong>: solo para <strong>grado</strong> si hay obstrucción.<br><br>
 
-        <strong>C) PBD (post broncodilatador)</strong><br>
-        • Úsala como <strong>variabilidad</strong>: una PBD positiva apoya asma/solapamiento, pero una negativa NO excluye asma ni EPOC.<br><br>
+          <strong>B) Algoritmo (lo que hace la app)</strong><br>
+          1) Si <strong>NO interpretable</strong> → no se interpreta, se recomienda repetir.<br>
+          2) Si interpretable:<br>
+          • Si <strong>RATIO &lt; 70</strong> → <strong>OBSTRUCTIVO</strong>.<br>
+          &nbsp;&nbsp;↳ si además <strong>FVC %REF ≤80</strong> → “Obstructivo con FVC baja” (atrapamiento vs mixto).<br>
+          • Si <strong>RATIO ≥ 70</strong> → NO obstrucción.<br>
+          &nbsp;&nbsp;↳ si <strong>FVC %REF ≤80</strong> → <strong>Restrictivo sugerido</strong>.<br>
+          &nbsp;&nbsp;↳ si <strong>FVC %REF &gt;80</strong> → <strong>Normal</strong> (según cortes).<br>
+        </div>
 
-        <strong>D) Limitaciones (para no engañarte)</strong><br>
-        • “Normal” no excluye asma entre crisis si la clínica encaja.<br>
-        • “Restrictivo sugerido” no confirma restricción: si cambia conducta, confirma con volúmenes (TLC).<br>
-        • “Obstructivo con FVC baja”: puede ser atrapamiento (pseudo-restricción) o mixto; si importa, confirma con volúmenes.<br><br>
+        <div class="hint" id="info-calidad">
+          <strong>Calidad: cómo decide la app</strong><br>
+          • Si marcas “Calidad suficiente: Sí” → interpretable (sin exigir ATS/ERS).<br>
+          • Si marcas “No” → NO interpretable.<br>
+          • Si lo dejas en “—” → exige ATS/ERS + reproducibilidad completos.<br><br>
+          Regla operativa que aplica la app:<br>
+          • <strong>NO interpretable</strong> si calidad “F” o reproducibilidad “No” en FVC o FEV1.<br>
+          • Si falta algún dato → “pendiente” (la app no interpreta).<br>
+        </div>
 
-        <strong>E) Derivar / ampliar estudio (reglas simples)</strong><br>
-        • Prueba repetida no interpretable / técnica imposible.<br>
-        • Duda diagnóstica que cambia tratamiento.<br>
-        • Obstrucción moderada-grave con síntomas relevantes o exacerbaciones repetidas.<br>
-        • Sospecha de restricción real o patrón mixto que condiciona decisiones.
+        <div class="hint" id="info-no-interpretable">
+          <strong>Cuando es NO interpretable</strong><br>
+          • No cierres patrón ni decisiones basadas en la prueba.<br>
+          • Repetir cuidando técnica: inicio explosivo, finalización correcta, fugas, sellado, tos, esfuerzo.<br>
+        </div>
+
+        <div class="hint" id="info-obstruccion">
+          <strong>Obstrucción (ratio &lt; 70)</strong><br>
+          • Define “obstructivo” con corte fijo 70 (según tu diseño actual).<br>
+          • Grado: por FEV1 %REF (si lo has metido).<br>
+          • Si FVC %REF ≤80 con obstrucción: “FVC baja” → atrapamiento (pseudo-restricción) vs mixto; si cambia conducta, confirmar con TLC.<br>
+        </div>
+
+        <div class="hint" id="info-plan-asma-obst">
+          <strong>Obstructivo + sospecha ASMA</strong><br>
+          • Una PBD positiva apoya variabilidad, pero una negativa no la excluye.<br>
+          • Si espirometría normal/dudosa con sospecha alta: repetir en fase sintomática y completar evaluación de variabilidad según contexto.<br>
+        </div>
+
+        <div class="hint" id="info-plan-epoc-obst">
+          <strong>Obstructivo + sospecha EPOC</strong><br>
+          • Cuadra con clínica/exposición/tabaco, registra exacerbaciones.<br>
+          • Revisión de técnica inhalatoria, adherencia y comorbilidades; plan de seguimiento si síntomas/exacerbaciones.<br>
+        </div>
+
+        <div class="hint" id="info-restriccion">
+          <strong>Restricción sugerida (ratio ≥70 + FVC %REF ≤80)</strong><br>
+          • “Sugerida” no confirma restricción: si cambia decisiones, confirmar con volúmenes (TLC).<br>
+          • Si clínica relevante: buscar alarmas (desaturación, crepitantes, disnea progresiva, Rx alterada) y ampliar/derivar.<br>
+        </div>
+
+        <div class="hint" id="info-normal">
+          <strong>Normal (ratio ≥70 + FVC %REF &gt;80)</strong><br>
+          • “Normal” no excluye asma entre crisis si clínica sugiere variabilidad.<br>
+          • Si síntomas persisten: revisar diferenciales (cardíaco, anemia, descondicionamiento, obesidad, rinitis/ERGE, ansiedad, etc.).<br>
+        </div>
+
+        <div class="hint" id="info-pbd">
+          <strong>PBD (post broncodilatador)</strong><br>
+          Criterios que calcula la app:<br>
+          • Clásico: ΔFEV1 ≥200 ml y ≥12% vs PRE.<br>
+          • Alternativo (si hay FEV1 %REF): ΔFEV1 &gt;10% del FEV1 predicho (inferido).<br><br>
+          Interpretación rápida:<br>
+          • Positiva: apoya variabilidad del flujo (asma/solapamiento).<br>
+          • Negativa: NO excluye asma ni EPOC.<br>
+        </div>
+
+        <div class="hint" id="info-derivar">
+          <strong>Derivar / ampliar estudio (reglas simples)</strong><br>
+          • Prueba repetida no interpretable / técnica imposible.<br>
+          • Duda diagnóstica que cambia tratamiento.<br>
+          • Obstrucción moderada-grave con síntomas relevantes o exacerbaciones repetidas.<br>
+          • Sospecha de restricción real o patrón mixto que condiciona decisiones.<br>
+        </div>
       </div>
     </div>
   </div>
